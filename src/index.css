@@ -1,13 +1,132 @@
+html {
+  height: -webkit-fill-available;
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+  font-family: 'Saira', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+    'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+
+  background-color: #0d4c73;
+  color: #fff;
+
+  display: flex;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+body > div {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+a {
+  color: #ffffff;
+}
+
+h1 {
+  font-size: 1em;
+}
+
+h2 {
+  font-size: 4em;
+  color: #f2b680;
+  margin: 0;
+  line-height: 0.5em;
+}
+
+h3 {
+  font-size: 2em;
+  color: #d98c5f;
+  margin-bottom: 1em;
+  line-height: 1em;
+}
+
+h4 {
+  font-size: 3em;
+  color: #35748c;
+  margin-bottom: 0;
+  line-height: 0.5em;
+}
+
+ul,
+ol {
+  text-align: left;
+  margin-bottom: 1em;
+}
+
+button,
+.button {
+  background: #35748c;
+  border-radius: 5px;
+  color: #ffffff;
+  border: 0;
+  padding: 0.5em;
+  font-size: 1em;
+  text-decoration: none;
+}
+
+.button {
+  display: inline-block;
+}
+
+button:hover,
+.button:hover {
+  box-shadow: 0 0 1em rgba(255, 255, 255, 0.2);
+}
+
+button:active,
+.button:hover {
+  box-shadow: 0 0.2em 0.5em rgba(255, 255, 255, 0.3);
+}
+
+dl {
+  text-align: left;
+}
+
+pre {
+  border-radius: 5px;
+  border: 1px dashed #35748c;
+  padding: 0.5em 1em;
+  margin-bottom: 1em;
+  font-size: 1em;
+}
+
+input[type='text'],
+input[type='password'],
+input[type='email'],
+input[type='url'] {
+  background: #ffffff;
+  border-radius: 5px;
+  color: #333333;
+  border: 1px solid #35748c;
+  padding: 0.5em;
+  font-size: 1em;
+  width: 100%;
+}
+
+.hint {
+  border-bottom: 1px dashed #d98c5f;
+  color: #d98c5f;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+label {
+  margin-bottom: 0.5em;
+  display: block;
+}
+
+p {
+  margin-top: 0;
+}
+
+.content {
+  width: 100%;
+  max-width: 768px
 }
