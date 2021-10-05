@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 function TotalTime(props) {
   const [url, setUrl] = useState('');
   const [isResultReady, setIsResultReady] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const isDebug = props.isDebug;
 
   const [totalDuration, setTotalDuration] = useState(``);
@@ -22,6 +23,7 @@ function TotalTime(props) {
 
   async function getTotalTime(props) {
     setIsResultReady(false);
+    setIsLoading(true);
 
     const parsedUrl = new URL(url);
 
@@ -51,6 +53,7 @@ function TotalTime(props) {
       setName(collection.name);
 
       setIsResultReady(true);
+      setIsLoading(false);
     } catch (err) {
       if (isDebug) console.error(`Error`, err.message);
     }
@@ -69,7 +72,7 @@ function TotalTime(props) {
 
   return (
     <main className="content">
-      <h3>Total Time</h3>
+      <h3>Total Time Calculator</h3>
       <label htmlFor="url">URL of the Collection or Challenge:</label>
       <p>
         <input
@@ -96,7 +99,12 @@ function TotalTime(props) {
           </ul>
         </>
       ) : null}
-      <span
+      {isLoading ? (
+        <p>
+          <small>Calculating...</small>
+        </p>
+      ) : null}
+      <small
         onClick={() =>
           setUrl(
             'https://docs.microsoft.com/en-us/users/webmaxru/collections/jk7zfxk2z0064y'
@@ -105,9 +113,9 @@ function TotalTime(props) {
         className="hint"
       >
         Sample Collection
-      </span>
+      </small>
       ,&nbsp;
-      <span
+      <small
         onClick={() =>
           setUrl(
             'https://docs.microsoft.com/en-us/learn/challenges?id=953d1dd3-16ca-458d-8347-ab49da9b0521'
@@ -116,7 +124,7 @@ function TotalTime(props) {
         className="hint"
       >
         Sample Challenge
-      </span>
+      </small>
     </main>
   );
 }

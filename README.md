@@ -2,6 +2,16 @@
 
 Set of tools to provide better experience for the learners and educators on MS Learn.
 
+- Utility #1: Total learning time calculator for Collection and Challenges
+
+<p align="center">
+    <img src="public/images/social.png" width="300">
+</p>
+
+### Try this in action
+
+[https://aka.ms/mslearn-util](https://aka.ms/mslearn-util)
+
 ## Available Scripts
 
 In the project directory, you can run:
