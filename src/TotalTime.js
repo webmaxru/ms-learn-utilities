@@ -92,6 +92,7 @@ function TotalTime(props) {
           <ul>
             <li>Collection name: {name}</li>
             <li>Module count: {moduleCount}</li>
+            <li>Item count: {itemCount}</li>
           </ul>
         </>
       ) : null}
