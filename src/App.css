@@ -36,11 +36,6 @@ footer p {
   .body {
     flex-direction: row;
   }
-
-  .nav,
-  .ads {
-    flex: 0 0 12em;
-  }
 }
 
 header h1 {

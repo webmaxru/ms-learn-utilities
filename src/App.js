@@ -1,4 +1,5 @@
 import TotalTime from './TotalTime.js';
+import Catalog from './Catalog.js';
 import About from './About.js';
 import './App.css';
 import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
@@ -22,13 +23,13 @@ function App() {
           <Route path="/about">
             <About />
           </Route>
-          <Route path="/">
+          <Route path="/total-time">
             <TotalTime isDebug={isDebug}></TotalTime>
           </Route>
+          <Route path="/">
+            <Catalog isDebug={isDebug}></Catalog>
+          </Route>
         </Switch>
-
-        <nav className="nav"></nav>
-        <aside className="ads"></aside>
       </div>
       <footer>
         {!isDebug ? (
