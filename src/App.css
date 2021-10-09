@@ -7,16 +7,6 @@
   justify-content: center;
 }
 
-.nav {
-  order: -1;
-}
-
-.nav,
-.ads {
-  padding: 1em;
-  color: #0d4c73;
-}
-
 header {
   color: #ffffff;
   text-align: center;
@@ -30,12 +20,6 @@ footer p {
   padding: 0.25em 0.5em;
   text-align: center;
   margin: 0;
-}
-
-@media (min-width: 768px) {
-  .body {
-    flex-direction: row;
-  }
 }
 
 header h1 {
