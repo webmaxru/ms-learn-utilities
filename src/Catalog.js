@@ -53,6 +53,16 @@ function Catalog(props) {
   let basePathLevel = useRef(0);
   let baseModuleLevel = useRef(0);
 
+  const minutesToHms = (d) => {
+    d = Number(d);
+    var h = Math.floor(d / 60);
+    var m = Math.floor((d % 60) / 1);
+
+    var hDisplay = h > 0 ? h + 'h ' : '';
+    var mDisplay = m > 0 ? m + 'm' : '';
+    return hDisplay + mDisplay;
+  }
+
   const calcLevel = (baseLevel, counter, total) => {
     if (total <= maxElementsPerLevel) {
       currentColCount.current = 1;
@@ -141,7 +151,7 @@ function Catalog(props) {
         meta: module,
         label: `${module.title}`,
         title: htmlTitle(
-          `Click to go to the module (${module.number_of_children} units)`
+          `Click to go to the module (${module.number_of_children} units), learning time: ${minutesToHms(module.duration_in_minutes)}`
         ),
       });
 
@@ -175,7 +185,7 @@ function Catalog(props) {
       newNodes.push({
         id: path.uid,
         label: `${path.title}`,
-        title: htmlTitle(`Click to see ${moduleCount} modules`),
+        title: htmlTitle(`Click to see ${moduleCount} modules, learning time: ${minutesToHms(path.duration_in_minutes)}`),
         meta: path,
         color: {
           background: '#E24F6D',
