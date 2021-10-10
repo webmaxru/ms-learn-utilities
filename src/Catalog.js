@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect, useRef } from 'react';
 import Graph from 'react-graph-vis';
@@ -61,7 +62,7 @@ function Catalog(props) {
     var hDisplay = h > 0 ? h + 'h ' : '';
     var mDisplay = m > 0 ? m + 'm' : '';
     return hDisplay + mDisplay;
-  }
+  };
 
   const calcLevel = (baseLevel, counter, total) => {
     if (total <= maxElementsPerLevel) {
@@ -151,7 +152,9 @@ function Catalog(props) {
         meta: module,
         label: `${module.title}`,
         title: htmlTitle(
-          `Click to go to the module (${module.number_of_children} units), learning time: ${minutesToHms(module.duration_in_minutes)}`
+          `Click to go to the module (${
+            module.number_of_children
+          } units), learning time: ${minutesToHms(module.duration_in_minutes)}`
         ),
       });
 
@@ -185,7 +188,11 @@ function Catalog(props) {
       newNodes.push({
         id: path.uid,
         label: `${path.title}`,
-        title: htmlTitle(`Click to see ${moduleCount} modules, learning time: ${minutesToHms(path.duration_in_minutes)}`),
+        title: htmlTitle(
+          `Click to see ${moduleCount} modules, learning time: ${minutesToHms(
+            path.duration_in_minutes
+          )}`
+        ),
         meta: path,
         color: {
           background: '#E24F6D',
