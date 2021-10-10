@@ -1,0 +1,22 @@
+.graph {
+  height: calc(100% - 100px);
+}
+
+.filter {
+  height: 80px;
+  padding: 0 2em;
+  display: flex;
+  gap: 1em;
+  flex-wrap: wrap;
+}
+
+.keyword {
+  max-width: 250px;
+}
+
+.catalog {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 2;
+}

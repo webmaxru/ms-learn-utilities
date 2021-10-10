@@ -13,8 +13,8 @@ body {
   min-height: 100vh;
   min-height: -webkit-fill-available;
 
-  background-color: #0d4c73;
-  color: #fff;
+  background-color: #cec1be;
+  color: #333333;
 
   display: flex;
 }
@@ -35,21 +35,21 @@ h1 {
 
 h2 {
   font-size: 4em;
-  color: #f2b680;
+  color: #E24F6D;
   margin: 0;
   line-height: 0.5em;
 }
 
 h3 {
   font-size: 2em;
-  color: #d98c5f;
+  color: #E24F6D;
   margin-bottom: 1em;
   line-height: 1em;
 }
 
 h4 {
   font-size: 3em;
-  color: #35748c;
+  color: #E24F6D;
   margin-bottom: 0;
   line-height: 0.5em;
 }
@@ -62,7 +62,7 @@ ol {
 
 button,
 .button {
-  background: #35748c;
+  background: #00968D;
   border-radius: 5px;
   color: #ffffff;
   border: 0;
@@ -91,7 +91,7 @@ dl {
 
 pre {
   border-radius: 5px;
-  border: 1px dashed #35748c;
+  border: 1px dashed #00968D;
   padding: 0.5em 1em;
   margin-bottom: 1em;
   font-size: 1em;
@@ -104,17 +104,10 @@ input[type='url'] {
   background: #ffffff;
   border-radius: 5px;
   color: #333333;
-  border: 1px solid #35748c;
-  padding: 0.5em;
+  border: none;
+  padding: 0.6em 0.5em;
   font-size: 1em;
   width: 100%;
-}
-
-.hint {
-  border-bottom: 1px dashed #d98c5f;
-  color: #d98c5f;
-  text-decoration: none;
-  cursor: pointer;
 }
 
 label {
@@ -122,14 +115,16 @@ label {
   display: block;
 }
 
+.hint {
+  border-bottom: 1px dashed #00968D;
+}
+
 p {
   margin-top: 0;
 }
 
-.content {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  flex:2;
-}
-
+.color-theme_1 { color: #00968D; }
+.color-theme_2 { color: #A5D5D8; }
+.color-theme_3 { color: #EEA737; }
+.color-theme_4 { color: #E24F6D; }
+.color-theme_5 { color: #F2A391; }

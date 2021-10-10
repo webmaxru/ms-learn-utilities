@@ -2,11 +2,29 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Graph from 'react-graph-vis';
 import Select from 'react-select';
-import { capitalCase } from 'change-case';
+import 'vis-network/styles/vis-network.min.css';
+import './Catalog.css';
 
 function Catalog(props) {
   const initialGraph = {
-    nodes: [{ id: 'roles', label: 'Roles', color: '#0d4c73', level: 1 }],
+    nodes: [
+      {
+        id: 'roles',
+        label: 'Profession',
+        color: {
+          background: '#A5D5D8',
+        },
+        font: {
+          color: '#333333',
+        },
+        level: 1,
+        borderWidth: 0,
+        widthConstraint: {
+          minimum: 150,
+          maximum: 150,
+        },
+      },
+    ],
     edges: [],
   };
   const [isResultReady, setIsResultReady] = useState(false);
@@ -16,28 +34,49 @@ function Catalog(props) {
   const [graph, setGraph] = useState(initialGraph);
 
   const [productSelectOptions, setProductSelectOptions] = useState([]);
+  const [levelSelectOptions, setLevelSelectOptions] = useState([]);
 
-  let filteredRoles,
-    filteredModules,
-    filteredPaths,
-    selectedRoleId,
-    selectedModuleId,
-    selectedPathId;
-  let initialCatalog = useRef(null);
+  const maxElementsPerLevel = 10;
+
+  let initialCatalog = useRef({});
+  let filteredPaths = useRef([]);
+  let filteredModules = useRef([]);
+  let filteredRoles = useRef([]);
+
+  let selectedProducts = useRef([]);
+  let selectedLevels = useRef([]);
+  let keyword = useRef('');
+
+  let currentColCount = useRef(1);
+
+  let baseRoleLevel = useRef(2);
+  let basePathLevel = useRef(0);
+  let baseModuleLevel = useRef(0);
+
+  const calcLevel = (baseLevel, counter, total) => {
+    if (total <= maxElementsPerLevel) {
+      currentColCount.current = 1;
+      return baseLevel;
+    }
+
+    let colCount = Math.ceil(total / maxElementsPerLevel);
+    currentColCount.current = colCount;
+
+    return baseLevel + (counter % colCount);
+  };
 
   const customSelectStyles = {
     option: (provided, state) => ({
       ...provided,
-      color: state.isSelected ? 'red' : 'blue',
+      color: state.isSelected ? '#00968D' : '#333333',
     }),
     container: (provided) => ({
       ...provided,
-      width: 300,
+      width: 250,
     }),
   };
 
   const openInNewTab = (url) => {
-    console.log(url);
     const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
     if (newWindow) newWindow.opener = null;
   };
@@ -50,70 +89,28 @@ function Catalog(props) {
 
       let node = graph.nodes.find((node) => node.id === nodes[0]);
 
-      console.log(node);
-
       if (node.type === 'role') {
-        selectedRoleId = node.id;
-        deleteGraphModules();
-        deleteGraphPaths();
-        addGraphPaths(selectedRoleId);
+        addGraphPaths(node.id);
       } else if (node.type === 'path') {
-        selectedPathId = node.id;
-        deleteGraphModules();
-        addGraphModules(selectedPathId);
+        addGraphModules(node.id);
       } else if (node.type === 'module') {
-        selectedModuleId = node.id;
-        openInNewTab(node.url);
+        openInNewTab(node.meta.url);
       }
     },
     doubleClick: ({ pointer: { canvas } }) => {},
   };
 
-  const deleteGraphPaths = () => {
-    let filteredNodes = graph.nodes.filter((node) => node.type !== 'path');
-
-    setGraph({ ...graph, nodes: filteredNodes });
-  };
-
-  const deleteGraphModules = () => {
-    let filteredNodes = graph.nodes.filter((node) => node.type !== 'module');
-
-    setGraph({ ...graph, nodes: filteredNodes });
-  };
-
-  const addGraphPaths = (roleId) => {
-    let counter = 1;
-    let newNodes = [];
-    let newEdges = [];
-
-    initialCatalog.current.learningPaths
-      .filter((path) => path.roles.some((e) => e === roleId))
-      .forEach((path) => {
-        const id = path.uid;
-        const label = `${capitalCase(path.title)}, ${
-          path.number_of_children
-        } modules`;
-        const color = '#d98c5f';
-
-        const level = counter % 3 === 0 ? 6 : counter % 2 === 0 ? 5 : 7;
-        counter++;
-
-        newNodes.push({
-          id: id,
-          label: label,
-          color: color,
-          level: level,
-          type: 'path',
-          url: path.url,
-        });
-
-        newEdges.push({ from: roleId, to: id });
-      });
-
-    setGraph((graph) => ({
-      nodes: [...graph.nodes, ...newNodes],
-      edges: [...graph.edges, ...newEdges],
-    }));
+  const deleteGraphElement = (types) => {
+    let filteredNodes = graph.nodes.filter((node) => {
+      return !types.includes(node.type);
+    });
+    let filteredEdges = graph.edges.filter((edge) => {
+      return !types.includes(edge.type);
+    });
+    return {
+      nodes: filteredNodes,
+      edges: filteredEdges,
+    };
   };
 
   const addGraphModules = (pathId) => {
@@ -125,50 +122,78 @@ function Catalog(props) {
       (path) => path.uid === pathId
     );
 
-    initialCatalog.current.modules
-      .filter((module) => {
-        return path.modules.includes(module.uid);
-      })
-      .forEach((module) => {
-        const id = module.uid;
-        const label = `${capitalCase(module.title)}, ${
-          module.number_of_children
-        } units`;
-        const color = '#d98c5f';
+    let clearedGraph = deleteGraphElement(['module']);
 
-        const level = counter % 3 === 0 ? 9 : counter % 2 === 0 ? 8 : 10;
-        counter++;
+    let modules = filteredModules.current.filter((module) => {
+      return path.modules.includes(module.uid);
+    });
 
-        newNodes.push({
-          id: id,
-          label: label,
-          color: color,
-          level: level,
-          type: 'module',
-          url: module.url,
-        });
+    modules.forEach((module) => {
+      counter++;
 
-        newEdges.push({ from: pathId, to: id });
+      newNodes.push({
+        id: module.uid,
+        color: {
+          background: '#EEA737',
+        },
+        level: calcLevel(baseModuleLevel.current, counter, modules.length),
+        type: 'module',
+        meta: module,
+        label: `${module.title}`,
+        title: htmlTitle(
+          `Click to go to the module (${module.number_of_children} units)`
+        ),
       });
 
-    setGraph((graph) => ({
-      nodes: [...graph.nodes, ...newNodes],
-      edges: [...graph.edges, ...newEdges],
+      newEdges.push({ from: pathId, to: module.uid, type: 'module' });
+    });
+
+    setGraph(() => ({
+      nodes: [...clearedGraph.nodes, ...newNodes],
+      edges: [...clearedGraph.edges, ...newEdges],
     }));
   };
 
-  const initGraph = (catalog) => {
-    filteredPaths = catalog.learningPaths;
-    filteredModules = catalog.modules;
-    filteredRoles = catalog.roles;
-    initialCatalog.current = catalog;
+  const addGraphPaths = (roleId) => {
+    let counter = 1;
+    let newNodes = [];
+    let newEdges = [];
 
-    buildGraph(filteredRoles);
-  };
+    let clearedGraph = deleteGraphElement(['module', 'path']);
 
-  const buildGraph = (roles, paths, modules) => {
-    setGraph(initialGraph);
-    addGraphRoles(roles);
+    let paths = filteredPaths.current.filter((path) =>
+      path.roles.some((e) => e === roleId)
+    );
+
+    paths.forEach((path) => {
+      let moduleCount = filteredModules.current.filter((module) => {
+        return path.modules.includes(module.uid);
+      }).length;
+
+      counter++;
+
+      newNodes.push({
+        id: path.uid,
+        label: `${path.title}`,
+        title: htmlTitle(`Click to see ${moduleCount} modules`),
+        meta: path,
+        color: {
+          background: '#E24F6D',
+        },
+        level: calcLevel(basePathLevel.current, counter, paths.length),
+        type: 'path',
+        url: path.url,
+      });
+
+      newEdges.push({ from: roleId, to: path.uid, type: 'path' });
+    });
+
+    baseModuleLevel.current = basePathLevel.current + currentColCount.current;
+
+    setGraph(() => ({
+      nodes: [...clearedGraph.nodes, ...newNodes],
+      edges: [...clearedGraph.edges, ...newEdges],
+    }));
   };
 
   const addGraphRoles = (roles) => {
@@ -177,26 +202,24 @@ function Catalog(props) {
     let newEdges = [];
 
     roles.forEach((role) => {
-      let learningPathCount = initialCatalog.current.learningPaths.filter(
-        (path) => path.roles.some((e) => e === role.id)
+      let learningPathCount = filteredPaths.current.filter((path) =>
+        path.roles.some((e) => e === role.id)
       ).length;
 
-      const id = role.id;
-      const label = `${capitalCase(role.name)}, ${learningPathCount} paths`;
-      const color = '#35748c';
-      const level = counter % 3 === 0 ? 3 : counter % 2 === 0 ? 2 : 4;
       counter++;
 
       newNodes.push({
-        id: id,
-        label: label,
-        color: color,
-        level: level,
+        id: role.id,
+        label: htmlLabel(`${role.name}`),
+        title: htmlTitle(`Click to see ${learningPathCount} learning paths`),
+        level: calcLevel(baseRoleLevel.current, counter, roles.length),
         type: 'role',
       });
 
-      newEdges.push({ from: 'roles', to: id });
+      newEdges.push({ from: 'roles', to: role.id, type: 'role' });
     });
+
+    basePathLevel.current = baseRoleLevel.current + currentColCount.current;
 
     setGraph((graph) => ({
       nodes: [...graph.nodes, ...newNodes],
@@ -204,9 +227,74 @@ function Catalog(props) {
     }));
   };
 
+  const initGraph = (catalog) => {
+    initialCatalog.current = catalog;
+    filteredPaths.current = initialCatalog.current.learningPaths;
+    filteredModules.current = initialCatalog.current.modules;
+    filteredRoles.current = initialCatalog.current.roles;
+
+    buildGraph(catalog.roles);
+  };
+
+  const buildGraph = (roles) => {
+    setGraph(initialGraph); // For local hot reload
+    addGraphRoles(roles);
+  };
+
+  const htmlTitle = (html) => {
+    const container = document.createElement('div');
+    container.innerHTML = html;
+    return container;
+  };
+
+  const htmlLabel = (html) => {
+    return `<b>${html}</b>`;
+  };
+
   const graphOptions = {
     edges: {
-      color: '#d98c5f',
+      color: '#ffffff',
+    },
+    nodes: {
+      borderWidth: 0,
+      labelHighlightBold: false,
+      widthConstraint: {
+        minimum: 350,
+        maximum: 350,
+      },
+      color: {
+        background: '#00968D',
+        hover: {
+          background: '#F2A391',
+        },
+        highlight: {
+          background: '#F2A391',
+        },
+      },
+      font: {
+        color: '#ffffff',
+        multi: 'html',
+        size: 20,
+      },
+      margin: {
+        top: 10,
+        bottom: 10,
+        left: 20,
+        right: 20,
+      },
+      shape: 'box',
+      shapeProperties: {
+        borderRadius: 5,
+      },
+      scaling: {
+        min: 10,
+        max: 150,
+        label: {
+          enabled: true,
+          min: 14,
+          max: 30,
+        },
+      },
     },
     layout: {
       randomSeed: undefined,
@@ -214,16 +302,39 @@ function Catalog(props) {
       clusterThreshold: 150,
       hierarchical: {
         enabled: true,
-        levelSeparation: 150,
+        levelSeparation: 450,
         nodeSpacing: 100,
-        treeSpacing: 200,
+        treeSpacing: 100,
         blockShifting: true,
         edgeMinimization: true,
         parentCentralization: true,
         direction: 'LR', // UD, DU, LR, RL
-        sortMethod: 'directed', // hubsize, directed
+        sortMethod: 'hubsize', // hubsize, directed
         shakeTowards: 'leaves', // roots, leaves
       },
+    },
+
+    interaction: {
+      dragNodes: true,
+      dragView: true,
+      hideEdgesOnDrag: false,
+      hideEdgesOnZoom: false,
+      hideNodesOnDrag: false,
+      hover: true,
+      hoverConnectedEdges: true,
+      keyboard: {
+        enabled: false,
+        speed: { x: 10, y: 10, zoom: 0.02 },
+        bindToWindow: true,
+        autoFocus: true,
+      },
+      multiselect: false,
+      navigationButtons: false,
+      selectable: true,
+      selectConnectedEdges: true,
+      tooltipDelay: 300,
+      zoomSpeed: 1,
+      zoomView: true,
     },
   };
 
@@ -233,17 +344,30 @@ function Catalog(props) {
     products.forEach((product) => {
       options.push({
         value: product.id,
-        label: capitalCase(product.name),
+        label: product.name,
       });
 
       product.children.forEach((product) => {
         options.push({
           value: product.id,
-          label: `- ${capitalCase(product.name)}`,
+          label: `- ${product.name}`,
         });
       });
 
       setProductSelectOptions(options);
+    });
+  };
+
+  const initLevelSelect = (levels) => {
+    let options = [];
+
+    levels.forEach((level) => {
+      options.push({
+        value: level.id,
+        label: level.name,
+      });
+
+      setLevelSelectOptions(options);
     });
   };
 
@@ -253,10 +377,11 @@ function Catalog(props) {
 
     const run = async () => {
       try {
-        const res = await fetch('catalog.json'); // /api/catalog
+        const res = await fetch('/api/catalog'); // /api/catalog OR catalog.json
         const catalog = await res.json();
 
         initProductSelect(catalog.products);
+        initLevelSelect(catalog.levels);
         initGraph(catalog);
       } catch (err) {
         if (isDebug) console.error(`Error`, err.message);
@@ -270,41 +395,88 @@ function Catalog(props) {
   }, []);
 
   const handleProductSelectChange = (value) => {
-    console.log(initialCatalog.current);
-
-    let selectedProducts = value.map((product) => product.value);
-    filterModulesByProducts(selectedProducts);
+    selectedProducts.current = value.map((product) => product.value);
+    filterModulesByProductsLevelsKeyword(
+      selectedProducts.current,
+      selectedLevels.current,
+      keyword.current
+    );
   };
 
-  const filterModulesByProducts = (products) => {
-    console.log(initialCatalog.current);
+  const handleLevelSelectChange = (value) => {
+    selectedLevels.current = value.map((level) => level.value);
+    filterModulesByProductsLevelsKeyword(
+      selectedProducts.current,
+      selectedLevels.current,
+      keyword.current
+    );
+  };
 
-    if (products.length === 0) {
+  const handleKeywordInputChange = (event) => {
+    keyword.current = event.target.value;
+    filterModulesByProductsLevelsKeyword(
+      selectedProducts.current,
+      selectedLevels.current,
+      keyword.current
+    );
+  };
+
+  const filterModulesByProductsLevelsKeyword = (products, levels, keyword) => {
+    console.log(products, levels, keyword);
+    if (products.length === 0 && levels.length === 0 && keyword === '') {
+      filteredPaths.current = initialCatalog.current.learningPaths;
+      filteredModules.current = initialCatalog.current.modules;
+      filteredRoles.current = initialCatalog.current.roles;
       buildGraph(initialCatalog.current.roles);
       return;
     }
-    let filteredModules = initialCatalog.current.modules.filter((module) => {
-      return module.products.some((product) => products.includes(product));
-    });
-    filterPathsByModules(filteredModules);
+    filteredModules.current = initialCatalog.current.modules.filter(
+      (module) => {
+        let isProductFound =
+          products.length === 0
+            ? true
+            : module.products.some((product) => products.includes(product));
+        let isLevelFound =
+          levels.length === 0
+            ? true
+            : module.levels.some((level) => levels.includes(level));
+        let isKeywordFound =
+          keyword === ''
+            ? true
+            : module.title.toUpperCase().includes(keyword.toUpperCase()) ||
+              module.summary.toUpperCase().includes(keyword.toUpperCase());
+
+        return isProductFound && isLevelFound && isKeywordFound;
+      }
+    );
+
+    console.log(filteredModules.current.length);
+
+    filterPathsByModules(filteredModules.current);
   };
 
   const filterPathsByModules = (modules) => {
     if (modules.length === 0) {
+      filteredPaths.current = [];
+      filterRolesByPaths(filteredPaths.current);
       return;
     }
 
     let moduleIds = modules.map((module) => module.uid);
 
-    let filteredPaths = initialCatalog.current.learningPaths.filter((path) => {
-      return path.modules.some((module) => moduleIds.includes(module));
-    });
+    filteredPaths.current = initialCatalog.current.learningPaths.filter(
+      (path) => {
+        return path.modules.some((module) => moduleIds.includes(module));
+      }
+    );
 
-    filterRolesByPaths(filteredPaths);
+    filterRolesByPaths(filteredPaths.current);
   };
 
   const filterRolesByPaths = (paths) => {
     if (paths.length === 0) {
+      filteredRoles.current = [];
+      buildGraph(filteredRoles.current);
       return;
     }
 
@@ -316,28 +488,51 @@ function Catalog(props) {
 
     roles = [...new Set(roles)];
 
-    let filteredRoles = initialCatalog.current.roles.filter((role) => {
+    filteredRoles.current = initialCatalog.current.roles.filter((role) => {
       return roles.includes(role.id);
     });
 
-    buildGraph(filteredRoles);
+    buildGraph(filteredRoles.current);
   };
 
   return (
     <>
       {isResultReady ? (
-        <div className="content">
-          <div className="filter" style={{ height: '50px' }}>
-            Product: 
-            <Select
-              options={productSelectOptions}
-              styles={customSelectStyles}
-              isMulti={true}
-              isSearchable={true}
-              onChange={handleProductSelectChange}
-            />
+        <div className="catalog">
+          <div className="filter">
+            <div>
+              Product:
+              <Select
+                options={productSelectOptions}
+                styles={customSelectStyles}
+                isMulti={true}
+                isSearchable={true}
+                onChange={handleProductSelectChange}
+                placeholder="[ All ]"
+              />
+            </div>
+            <div>
+              Level:
+              <Select
+                options={levelSelectOptions}
+                styles={customSelectStyles}
+                isMulti={true}
+                isSearchable={true}
+                onChange={handleLevelSelectChange}
+                placeholder="[ All ]"
+              />
+            </div>
+            <div>
+              Module keyword:
+              <input
+                type="text"
+                value={keyword.current}
+                onChange={handleKeywordInputChange}
+                className="keyword"
+              />
+            </div>
           </div>
-          <div className="graph" style={{ height: 'calc(100% - 100px)' }}>
+          <div className="graph">
             <Graph
               graph={graph}
               options={graphOptions}

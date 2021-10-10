@@ -14,6 +14,10 @@ function App() {
         <h1>
           <Link to="/">MS Learn Utilities</Link>
         </h1>
+
+        <a href="/" className="menu">Module Navigator</a>
+        <a href="/total-time" className="menu">Total Time</a>
+
         <Link to="/about" className="about">
           &#63;
         </Link>
