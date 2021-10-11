@@ -10,6 +10,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 function Catalog(props) {
   const ROOT_NODE_ID = 'roles';
+  const MAX_ELEMENTS_PER_LEVEL = 12;
 
   const FOCUS_PARAMS = {
     locked: false,
@@ -65,8 +66,6 @@ function Catalog(props) {
   const [levelSelectOptions, setLevelSelectOptions] = useState([]);
   const [network, setNetwork] = useState({});
 
-  const maxElementsPerLevel = 10;
-
   let initialCatalog = useRef({});
   let filteredPaths = useRef([]);
   let filteredModules = useRef([]);
@@ -89,6 +88,16 @@ function Catalog(props) {
     var hDisplay = h > 0 ? h + 'h ' : '';
     var mDisplay = m > 0 ? m + 'm' : '';
     return hDisplay + mDisplay;
+  };
+
+  const buildRoleList = (roles) => {
+    return roles
+      .map((role) => {
+        return initialCatalog.current.roles.find((r) => {
+          return r.id === role;
+        }).name;
+      })
+      .join(', ');
   };
 
   const buildLevelList = (levels) => {
@@ -128,12 +137,12 @@ function Catalog(props) {
   };
 
   const calcLevel = (baseLevel, counter, total) => {
-    if (total <= maxElementsPerLevel) {
+    if (total <= MAX_ELEMENTS_PER_LEVEL) {
       currentColCount.current = 1;
       return baseLevel;
     }
 
-    let colCount = Math.ceil(total / maxElementsPerLevel);
+    let colCount = Math.ceil(total / MAX_ELEMENTS_PER_LEVEL);
     currentColCount.current = colCount;
 
     return baseLevel + (counter % colCount);
@@ -151,12 +160,17 @@ function Catalog(props) {
   };
 
   const openInNewTab = (url) => {
-    const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
-    if (newWindow) newWindow.opener = null;
+    const a = document.createElement('a');
+    a.setAttribute('href', url);
+    a.setAttribute('target', '_blank');
+    a.click();
+
+    /*     const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
+    if (newWindow) newWindow.opener = null; */
   };
 
   const graphEvents = {
-    click: ({ nodes, edges }) => {
+    click: ({ nodes }) => {
       if (!nodes[0]) {
         return;
       }
@@ -167,11 +181,17 @@ function Catalog(props) {
         addGraphPaths(node.id);
       } else if (node.type === 'path') {
         addGraphModules(node.id);
-      } else if (node.type === 'module') {
+      } else if (node.type === 'module' || node.type === 'moduleWithoutPath') {
         openInNewTab(node.meta.url);
       }
     },
-    doubleClick: ({ pointer: { canvas } }) => {},
+    doubleClick: ({ nodes }) => {
+      if (!nodes[0]) {
+        return;
+      }
+
+      network.focus(nodes[0], FOCUS_PARAMS);
+    },
   };
 
   const deleteGraphElement = (types) => {
@@ -199,6 +219,7 @@ function Catalog(props) {
       )}</strong></p>
       <p>Products: <strong>${buildProductList(module.products)}</strong></p>
       <p>Levels: <strong>${buildLevelList(module.levels)}</strong></p>
+      <p>Roles: <strong>${buildRoleList(module.roles)}</strong></p>
       <p>Units: <strong>${module.number_of_children}</strong></p>
       <p>This is a <span class="label-module">learning module</span>. Click to see its details on MS Learn</p>`
     );
@@ -289,6 +310,7 @@ function Catalog(props) {
           )}</strong></p>
           <p>Products: <strong>${buildProductList(path.products)}</strong></p>
           <p>Levels: <strong>${buildLevelList(path.levels)}</strong></p>
+          <p>Roles: <strong>${buildRoleList(path.roles)}</strong></p>
           <p>This is a <span class="label-path">learning path</span>. Click to see <span class="label-module">${moduleCount} included modules</span></p>`
         ),
         meta: path,
@@ -460,7 +482,7 @@ function Catalog(props) {
         edgeMinimization: true,
         parentCentralization: true,
         direction: 'LR', // UD, DU, LR, RL
-        sortMethod: 'hubsize', // hubsize, directed
+        sortMethod: 'directed', // hubsize, directed
         shakeTowards: 'leaves', // roots, leaves
       },
     },
@@ -479,12 +501,12 @@ function Catalog(props) {
         bindToWindow: true,
         autoFocus: true,
       },
-      multiselect: false,
-      navigationButtons: false,
+      multiselect: true,
+      navigationButtons: true,
       selectable: true,
       selectConnectedEdges: true,
       tooltipDelay: 300,
-      zoomSpeed: 1,
+      zoomSpeed: 2,
       zoomView: true,
     },
   };
