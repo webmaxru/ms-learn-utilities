@@ -9,11 +9,32 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 function Catalog(props) {
+  const ROOT_NODE_ID = 'roles';
+
+  const FOCUS_PARAMS = {
+    locked: false,
+    animation: {
+      duration: 1000,
+      easingFunction: 'easeInOutQuad',
+    },
+  };
+
+  const htmlHint = (html) => {
+    const container = document.createElement('div');
+    container.className = 'hint';
+    container.innerHTML = html;
+    return container;
+  };
+
+  const htmlLabel = (html) => {
+    return `<b>${html}</b>`;
+  };
+
   const initialGraph = {
     nodes: [
       {
-        id: 'roles',
-        label: 'Role',
+        id: ROOT_NODE_ID,
+        label: `${htmlLabel('Role')}`,
         color: {
           background: '#A5D5D8',
         },
@@ -33,6 +54,10 @@ function Catalog(props) {
   const [isResultReady, setIsResultReady] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const isDebug = props.isDebug;
+
+  const CATALOG_URL = isDebug
+    ? 'http://localhost:7071/api/catalog'
+    : '/api/catalog';
 
   const [graph, setGraph] = useState(initialGraph);
 
@@ -206,7 +231,7 @@ function Catalog(props) {
         level: calcLevel(baseModuleLevel.current, counter, modules.length),
         type: 'module',
         meta: module,
-        label: `${module.title}`,
+        label: `${htmlLabel(module.title)}`,
         title: htmlHintModule(module),
       });
 
@@ -220,13 +245,7 @@ function Catalog(props) {
       edges: [...clearedGraph.edges, ...newEdges],
     }));
 
-    network.focus(lastNodeId, {
-      locked: false,
-      animation: {
-        duration: 1000,
-        easingFunction: 'easeInOutQuad',
-      },
-    });
+    network.focus(lastNodeId, FOCUS_PARAMS);
   };
 
   const addGraphPaths = (roleId) => {
@@ -258,7 +277,7 @@ function Catalog(props) {
 
       newNodes.push({
         id: path.uid,
-        label: `${path.title}`,
+        label: `${htmlLabel(path.title)}`,
         title: htmlHint(
           `<p align="center"><img src="${
             path.icon_url
@@ -304,7 +323,7 @@ function Catalog(props) {
         ),
         type: 'moduleWithoutPath',
         meta: module,
-        label: `${module.title}`,
+        label: `${htmlLabel(module.title)}`,
         title: htmlHintModule(module),
       });
 
@@ -324,13 +343,7 @@ function Catalog(props) {
       edges: [...clearedGraph.edges, ...newEdges],
     }));
 
-    network.focus(lastNodeId, {
-      locked: false,
-      animation: {
-        duration: 1000,
-        easingFunction: 'easeInOutQuad',
-      },
-    });
+    network.focus(lastNodeId, FOCUS_PARAMS);
   };
 
   const addGraphRoles = (roles) => {
@@ -359,7 +372,7 @@ function Catalog(props) {
         type: 'role',
       });
 
-      newEdges.push({ from: 'roles', to: role.id, type: 'role' });
+      newEdges.push({ from: ROOT_NODE_ID, to: role.id, type: 'role' });
     });
 
     basePathLevel.current = baseRoleLevel.current + currentColCount.current;
@@ -382,17 +395,10 @@ function Catalog(props) {
   const buildGraph = (roles) => {
     setGraph(initialGraph); // For local hot reload
     addGraphRoles(roles);
-  };
-
-  const htmlHint = (html) => {
-    const container = document.createElement('div');
-    container.className = 'hint';
-    container.innerHTML = html;
-    return container;
-  };
-
-  const htmlLabel = (html) => {
-    return `<b>${html}</b>`;
+    if (network && network.focus) {
+      network.focus(ROOT_NODE_ID, FOCUS_PARAMS);
+      network.fit();
+    }
   };
 
   const graphOptions = {
@@ -419,6 +425,7 @@ function Catalog(props) {
         color: '#ffffff',
         multi: 'html',
         size: 20,
+        face: 'Saira',
       },
       margin: {
         top: 10,
@@ -521,7 +528,7 @@ function Catalog(props) {
 
     const run = async () => {
       try {
-        const res = await fetch('/api/catalog'); // /api/catalog OR catalog.json
+        const res = await fetch(CATALOG_URL);
         let catalog = await res.json();
 
         initProductSelect(catalog.products);
@@ -582,7 +589,6 @@ function Catalog(props) {
   };
 
   const filterModulesByProductsLevelsKeyword = (products, levels, keyword) => {
-    console.log(products, levels, keyword);
     if (products.length === 0 && levels.length === 0 && keyword === '') {
       filteredPaths.current = initialCatalog.current.learningPaths;
       filteredModules.current = initialCatalog.current.modules;
@@ -609,9 +615,6 @@ function Catalog(props) {
         return isProductFound && isLevelFound && isKeywordFound;
       }
     );
-
-    console.log(filteredModules.current.length);
-
     filterPathsByModules(filteredModules.current);
   };
 

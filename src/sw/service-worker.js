@@ -51,7 +51,7 @@ registerRoute(navigationRoute);
 // STATIC RESOURCES
 
 googleFontsCache({ cachePrefix: 'wb6-gfonts' });
-imageCache({ cachePrefix: 'wb6-images' });
+imageCache({ cachePrefix: 'wb6-images', maxEntries: 10 });
 
 // APP SHELL UPDATE FLOW
 
@@ -65,16 +65,22 @@ addEventListener('message', (event) => {
 
 registerRoute(
   ({ url }) => url.pathname.startsWith('/api/catalog'),
-
-  async ({ event }) => {
+  async ({ event, request }) => {
     try {
       return await new StaleWhileRevalidate({
         cacheName: 'api-cache',
         plugins: [new BroadcastUpdatePlugin()],
-      }).handle({ event });
+      }).handle({ event, request });
     } catch (error) {
       messageClient(event, 'REQUEST_FAILED');
       return await fetch('/catalog.json');
     }
   }
+);
+
+registerRoute(
+  ({ url }) =>
+    url.pathname.startsWith('/api/challenge') ||
+    url.pathname.startsWith('/api/collection'),
+  new StaleWhileRevalidate()
 );

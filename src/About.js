@@ -1,7 +1,14 @@
 function About() {
   return (
     <main className="content">
-      <h3>Author and credits</h3>
+      <h3>Author</h3>
+      <p>
+        Visual explorer of the Learning Paths based on{' '}
+        <a href="https://docs.microsoft.com/en-us/learn/support/catalog-api">
+          Microsoft Learn Catalog API
+        </a>
+        .
+      </p>
       <p>
         Built by <a href="https://twitter.com/webmaxru">Maxim Salnikov</a>. I
         will be happy to see your feedback and contributions in{' '}

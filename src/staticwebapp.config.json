@@ -9,7 +9,7 @@
   ],
   "navigationFallback": {
     "rewrite": "index.html",
-    "exclude": ["/images/*.{png,jpg,gif}", "/static/*"]
+    "exclude": ["/images/*.{png,jpg,gif}", "/static/*", "catalog.json"]
   },
   "responseOverrides": {
     "404": {

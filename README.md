@@ -2,7 +2,7 @@
 
 Set of tools to provide better experience for the learners and educators on MS Learn.
 
-- Utility #1: Total learning time calculator for Collection and Challenges
+- Utility #1: Visual explorer of the Learning Paths based on [Microsoft Learn Catalog API](https://docs.microsoft.com/en-us/learn/support/catalog-api)
 
 <p align="center">
     <img src="public/images/social.png" width="300">
@@ -10,7 +10,32 @@ Set of tools to provide better experience for the learners and educators on MS L
 
 ### Try this in action
 
+This is a Progressive Web Application (installable, offline-ready) driven by Workbox-powered service worker.
+
 [https://aka.ms/mslearn-util](https://aka.ms/mslearn-util)
+
+## Flow and resources for the Azure Static Web Apps features demo
+
+### Installation
+
+```shell
+git clone https://github.com/webmaxru/ms-learn-utilities.git
+cd ms-learn-utilities
+npm install
+
+# Installing tools for Static Web Apps and Azure Functions
+npm install -g @azure/static-web-apps-cli
+npm install -g azure-functions-core-tools@3 --unsafe-perm true
+```
+
+### Starting local development server
+
+```shell
+# Instead of CRA's "npm start" we use SWA CLI's command to start everything at once
+swa start http://localhost:3000 --run "npm start" --api ./api
+```
+
+Open [http://localhost:4280](http://localhost:4280) in your browser.
 
 ## Available Scripts
 
@@ -37,4 +62,3 @@ See the section about [deployment](https://facebook.github.io/create-react-app/d
 ### Author
 
 [Maxim Salnikov](https://twitter.com/webmaxru). Feel free to contact me if you have any questions about the project, PWA, Azure Static Web Apps.
-
