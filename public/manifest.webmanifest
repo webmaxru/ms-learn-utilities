@@ -1,28 +1,18 @@
 {
   "short_name": "MS Learn Utilities",
-  "name": "Microsoft Learn Utilities",
+  "name": "MS Learn Utilities",
   "description": "Set of tools to provide better experience for the learners and educators on MS Learn",
   "start_url": "/?utm_source=homescreen",
   "display": "standalone",
-  "theme_color": "#0d4c73",
-  "background_color": "#0d4c73",
-  "orientation": "portrait",
+  "theme_color": "#00968D",
+  "background_color": "#00968D",
+  "orientation": "landscape",
   "scope": "/",
-  "categories": ["entertainment", "music"],
+  "categories": ["education"],
   "icons": [
     {
       "src": "/images/icons/icon-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/images/icons/icon-256x256.png",
-      "sizes": "256x256",
-      "type": "image/png"
-    },
-    {
-      "src": "/images/icons/icon-384x384.png",
-      "sizes": "384x384",
       "type": "image/png"
     },
     {

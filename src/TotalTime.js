@@ -110,7 +110,7 @@ function TotalTime(props) {
             'https://docs.microsoft.com/en-us/users/webmaxru/collections/jk7zfxk2z0064y'
           )
         }
-        className="hint"
+        className="sample"
       >
         Sample Collection
       </small>
@@ -121,7 +121,7 @@ function TotalTime(props) {
             'https://docs.microsoft.com/en-us/learn/challenges?id=953d1dd3-16ca-458d-8347-ab49da9b0521'
           )
         }
-        className="hint"
+        className="sample"
       >
         Sample Challenge
       </small>

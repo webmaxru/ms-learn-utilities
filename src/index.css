@@ -13,7 +13,7 @@ body {
   min-height: 100vh;
   min-height: -webkit-fill-available;
 
-  background-color: #cec1be;
+  background-color: #fbf2f0;
   color: #333333;
 
   display: flex;
@@ -26,7 +26,7 @@ body > div {
 }
 
 a {
-  color: #ffffff;
+  color: #00968D;
 }
 
 h1 {
@@ -35,21 +35,21 @@ h1 {
 
 h2 {
   font-size: 4em;
-  color: #E24F6D;
+  color: #00968D;
   margin: 0;
   line-height: 0.5em;
 }
 
 h3 {
   font-size: 2em;
-  color: #E24F6D;
+  color: #00968D;
   margin-bottom: 1em;
   line-height: 1em;
 }
 
 h4 {
   font-size: 3em;
-  color: #E24F6D;
+  color: #00968D;
   margin-bottom: 0;
   line-height: 0.5em;
 }
@@ -104,7 +104,7 @@ input[type='url'] {
   background: #ffffff;
   border-radius: 5px;
   color: #333333;
-  border: none;
+  border: 1px solid #cccccc;
   padding: 0.6em 0.5em;
   font-size: 1em;
   width: 100%;
@@ -115,8 +115,38 @@ label {
   display: block;
 }
 
-.hint {
+.sample {
   border-bottom: 1px dashed #00968D;
+}
+
+.hint {
+  max-width: 300px;
+}
+
+.hint {
+  white-space: normal;
+  font-size: 1em;
+  font-family: 'Saira', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+    'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+}
+
+.label-module {
+  display: inline-block;
+  border-radius: 3px;
+  padding: 0 0.5em;
+  background-color: #EEA737;
+  color: #ffffff;
+  font-weight: bold;
+}
+
+.label-path {
+  display: inline-block;
+  border-radius: 3px;
+  padding: 0 0.5em;
+  background-color: #E24F6D;
+  color: #ffffff;
+  font-weight: bold;
 }
 
 p {

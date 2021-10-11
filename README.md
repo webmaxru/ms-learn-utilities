@@ -1,4 +1,4 @@
-# Microsoft Learn Utilities
+# MS Learn Utilities
 
 Set of tools to provide better experience for the learners and educators on MS Learn.
 

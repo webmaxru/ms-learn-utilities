@@ -11,37 +11,44 @@ header {
   color: #ffffff;
   text-align: center;
   display: flex;
-  background-color: #E24F6D;
+  background-color: #00968d;
   padding: 0 0 0 2em;
   gap: 2em;
 }
 
 footer p {
   font-size: 0.75em;
-  background-color: #F2A391;
+  background-color: #f2a391;
   color: #ffffff;
   padding: 0.25em 0.5em;
   text-align: center;
   margin: 0;
 }
 
+footer a {
+  color: #ffffff;
+}
+
 header h1 {
   margin-bottom: 0.5em;
   margin-top: 0.5em;
+  color: #ffffff;
 }
 
 header a.menu {
   font-size: 0.8em;
   margin-top: 0.7em;
+  color: #ffffff;
 }
 
 header h1 a {
   text-decoration: none;
+  color: #ffffff;
 }
 
 .about {
   margin-left: auto;
-  background: #EEA737;
+  background: #eea737;
   border-radius: 0 0 0 2em;
   color: #ffffff;
   border: 0;

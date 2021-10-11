@@ -3,10 +3,59 @@ import Catalog from './Catalog.js';
 import About from './About.js';
 import './App.css';
 import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Workbox } from 'workbox-window';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   const query = new URLSearchParams(window.location.search);
   const isDebug = query.get('debug') === 'true';
+
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      const wb = new Workbox('/sw.js');
+
+      const refreshPage = () => {
+        wb.addEventListener('controlling', (event) => {
+          window.location.reload();
+        });
+
+        wb.messageSkipWaiting();
+      };
+
+      const Msg = (props) => (
+        <div>
+          Updated {props.type.toString()} is available&nbsp;&nbsp;
+          <button onClick={refreshPage}>Reload</button>
+        </div>
+      );
+
+      const showSkipWaitingPrompt = (type) => {
+        toast.info(<Msg type={type} />);
+      };
+
+      wb.addEventListener('waiting', () => showSkipWaitingPrompt('app'));
+
+      wb.addEventListener('message', (event) => {
+        if (!event.data) {
+          return;
+        }
+
+        if (event.data.meta === 'workbox-broadcast-update') {
+          showSkipWaitingPrompt('catalog data');
+        }
+
+        if (event.data.type === 'REQUEST_FAILED') {
+          toast.warning(
+            'No network connection. Using stored catalog data (might be outdated).'
+          );
+        }
+      });
+
+      wb.register();
+    }
+  }, []);
 
   return (
     <Router>
@@ -15,8 +64,12 @@ function App() {
           <Link to="/">MS Learn Utilities</Link>
         </h1>
 
-        <a href="/" className="menu">Module Navigator</a>
-        <a href="/total-time" className="menu">Total Time</a>
+        <a href="/" className="menu">
+          Module Navigator
+        </a>
+        {/*         <a href="/total-time" className="menu">
+          Total Time
+        </a> */}
 
         <Link to="/about" className="about">
           &#63;
@@ -38,7 +91,7 @@ function App() {
       <footer>
         {!isDebug ? (
           <p>
-            Made in 🇳🇴&nbsp; by&nbsp;
+            Made in Norway by&nbsp;
             <a href="https://twitter.com/webmaxru/">Maxim Salnikov</a> |&nbsp;
             <a href="https://github.com/webmaxru/ms-learn-utilities">GitHub</a>
           </p>
@@ -46,6 +99,7 @@ function App() {
           <p>Debugging mode</p>
         )}
       </footer>
+      <ToastContainer />
     </Router>
   );
 }

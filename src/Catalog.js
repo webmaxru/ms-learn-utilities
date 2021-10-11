@@ -5,13 +5,15 @@ import Graph from 'react-graph-vis';
 import Select from 'react-select';
 import 'vis-network/styles/vis-network.min.css';
 import './Catalog.css';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function Catalog(props) {
   const initialGraph = {
     nodes: [
       {
         id: 'roles',
-        label: 'Profession',
+        label: 'Role',
         color: {
           background: '#A5D5D8',
         },
@@ -21,8 +23,8 @@ function Catalog(props) {
         level: 1,
         borderWidth: 0,
         widthConstraint: {
-          minimum: 150,
-          maximum: 150,
+          minimum: 100,
+          maximum: 100,
         },
       },
     ],
@@ -36,6 +38,7 @@ function Catalog(props) {
 
   const [productSelectOptions, setProductSelectOptions] = useState([]);
   const [levelSelectOptions, setLevelSelectOptions] = useState([]);
+  const [network, setNetwork] = useState({});
 
   const maxElementsPerLevel = 10;
 
@@ -49,7 +52,6 @@ function Catalog(props) {
   let keyword = useRef('');
 
   let currentColCount = useRef(1);
-
   let baseRoleLevel = useRef(2);
   let basePathLevel = useRef(0);
   let baseModuleLevel = useRef(0);
@@ -62,6 +64,42 @@ function Catalog(props) {
     var hDisplay = h > 0 ? h + 'h ' : '';
     var mDisplay = m > 0 ? m + 'm' : '';
     return hDisplay + mDisplay;
+  };
+
+  const buildLevelList = (levels) => {
+    return levels
+      .map((level) => {
+        return initialCatalog.current.levels.find((l) => {
+          return l.id === level;
+        }).name;
+      })
+      .join(', ');
+  };
+
+  const buildProductList = (products) => {
+    const deepSearch = (object, key, predicate) => {
+      if (object.hasOwnProperty(key) && predicate(key, object[key]) === true)
+        return object;
+
+      for (let i = 0; i < Object.keys(object).length; i++) {
+        const nextObject = object[Object.keys(object)[i]];
+        if (nextObject && typeof nextObject === 'object') {
+          let o = deepSearch(nextObject, key, predicate);
+          if (o != null) return o;
+        }
+      }
+      return null;
+    };
+
+    return products
+      .map((product) => {
+        return deepSearch(
+          initialCatalog.current.products,
+          'id',
+          (k, v) => v === product
+        ).name;
+      })
+      .join(', ');
   };
 
   const calcLevel = (baseLevel, counter, total) => {
@@ -124,10 +162,28 @@ function Catalog(props) {
     };
   };
 
+  const htmlHintModule = (module) => {
+    return htmlHint(
+      `<p align="center"><img src="${
+        module.icon_url
+      }" alt="" class="hint-icon" /></p>
+      <p><strong>${module.title}</strong></p>
+      <p>${module.summary}</p>
+      <p>Learning time: <strong>${minutesToHms(
+        module.duration_in_minutes
+      )}</strong></p>
+      <p>Products: <strong>${buildProductList(module.products)}</strong></p>
+      <p>Levels: <strong>${buildLevelList(module.levels)}</strong></p>
+      <p>Units: <strong>${module.number_of_children}</strong></p>
+      <p>This is a <span class="label-module">learning module</span>. Click to see its details on MS Learn</p>`
+    );
+  };
+
   const addGraphModules = (pathId) => {
-    let counter = 1;
+    let counter = 0;
     let newNodes = [];
     let newEdges = [];
+    let lastNodeId = null;
 
     let path = initialCatalog.current.learningPaths.find(
       (path) => path.uid === pathId
@@ -151,32 +207,47 @@ function Catalog(props) {
         type: 'module',
         meta: module,
         label: `${module.title}`,
-        title: htmlTitle(
-          `Click to go to the module (${
-            module.number_of_children
-          } units), learning time: ${minutesToHms(module.duration_in_minutes)}`
-        ),
+        title: htmlHintModule(module),
       });
 
       newEdges.push({ from: pathId, to: module.uid, type: 'module' });
+
+      lastNodeId = module.uid;
     });
 
     setGraph(() => ({
       nodes: [...clearedGraph.nodes, ...newNodes],
       edges: [...clearedGraph.edges, ...newEdges],
     }));
+
+    network.focus(lastNodeId, {
+      locked: false,
+      animation: {
+        duration: 1000,
+        easingFunction: 'easeInOutQuad',
+      },
+    });
   };
 
   const addGraphPaths = (roleId) => {
-    let counter = 1;
+    let counter = 0;
     let newNodes = [];
     let newEdges = [];
+    let lastNodeId = null;
 
-    let clearedGraph = deleteGraphElement(['module', 'path']);
+    let clearedGraph = deleteGraphElement([
+      'module',
+      'path',
+      'moduleWithoutPath',
+    ]);
 
     let paths = filteredPaths.current.filter((path) =>
       path.roles.some((e) => e === roleId)
     );
+
+    let modules = filteredModules.current.filter((module) => {
+      return module.roles.some((e) => e === roleId) && module.withoutPath;
+    });
 
     paths.forEach((path) => {
       let moduleCount = filteredModules.current.filter((module) => {
@@ -188,21 +259,62 @@ function Catalog(props) {
       newNodes.push({
         id: path.uid,
         label: `${path.title}`,
-        title: htmlTitle(
-          `Click to see ${moduleCount} modules, learning time: ${minutesToHms(
+        title: htmlHint(
+          `<p align="center"><img src="${
+            path.icon_url
+          }" alt="" class="hint-icon" /></p>
+          <p><strong>${path.title}</strong></p>
+          <p>${path.summary}</p>
+          <p>Learning time: <strong>${minutesToHms(
             path.duration_in_minutes
-          )}`
+          )}</strong></p>
+          <p>Products: <strong>${buildProductList(path.products)}</strong></p>
+          <p>Levels: <strong>${buildLevelList(path.levels)}</strong></p>
+          <p>This is a <span class="label-path">learning path</span>. Click to see <span class="label-module">${moduleCount} included modules</span></p>`
         ),
         meta: path,
         color: {
           background: '#E24F6D',
         },
-        level: calcLevel(basePathLevel.current, counter, paths.length),
+        level: calcLevel(
+          basePathLevel.current,
+          counter,
+          paths.length + modules.length
+        ),
         type: 'path',
-        url: path.url,
       });
 
       newEdges.push({ from: roleId, to: path.uid, type: 'path' });
+
+      lastNodeId = path.uid;
+    });
+
+    modules.forEach((module) => {
+      counter++;
+
+      newNodes.push({
+        id: module.uid,
+        color: {
+          background: '#EEA737',
+        },
+        level: calcLevel(
+          basePathLevel.current,
+          counter,
+          paths.length + modules.length
+        ),
+        type: 'moduleWithoutPath',
+        meta: module,
+        label: `${module.title}`,
+        title: htmlHintModule(module),
+      });
+
+      newEdges.push({
+        from: roleId,
+        to: module.uid,
+        type: 'moduleWithoutPath',
+      });
+
+      lastNodeId = module.uid;
     });
 
     baseModuleLevel.current = basePathLevel.current + currentColCount.current;
@@ -211,10 +323,18 @@ function Catalog(props) {
       nodes: [...clearedGraph.nodes, ...newNodes],
       edges: [...clearedGraph.edges, ...newEdges],
     }));
+
+    network.focus(lastNodeId, {
+      locked: false,
+      animation: {
+        duration: 1000,
+        easingFunction: 'easeInOutQuad',
+      },
+    });
   };
 
   const addGraphRoles = (roles) => {
-    let counter = 1;
+    let counter = 0;
     let newNodes = [];
     let newEdges = [];
 
@@ -223,12 +343,18 @@ function Catalog(props) {
         path.roles.some((e) => e === role.id)
       ).length;
 
+      let moduleCount = filteredModules.current.filter((module) => {
+        return module.roles.some((e) => e === role.id) && module.withoutPath;
+      }).length;
+
       counter++;
 
       newNodes.push({
         id: role.id,
         label: htmlLabel(`${role.name}`),
-        title: htmlTitle(`Click to see ${learningPathCount} learning paths`),
+        title: htmlHint(
+          `Click to see <span class="label-path">${learningPathCount} learning paths</span> and <span class="label-module">${moduleCount} modules</span> for this role`
+        ),
         level: calcLevel(baseRoleLevel.current, counter, roles.length),
         type: 'role',
       });
@@ -258,8 +384,9 @@ function Catalog(props) {
     addGraphRoles(roles);
   };
 
-  const htmlTitle = (html) => {
+  const htmlHint = (html) => {
     const container = document.createElement('div');
+    container.className = 'hint';
     container.innerHTML = html;
     return container;
   };
@@ -270,7 +397,7 @@ function Catalog(props) {
 
   const graphOptions = {
     edges: {
-      color: '#ffffff',
+      color: '#cccccc',
     },
     nodes: {
       borderWidth: 0,
@@ -394,22 +521,38 @@ function Catalog(props) {
 
     const run = async () => {
       try {
-        const res = await fetch('/api/catalog'); // /api/catalog OR catalog.json
-        const catalog = await res.json();
+        const res = await fetch('catalog.json'); // /api/catalog OR catalog.json
+        let catalog = await res.json();
 
         initProductSelect(catalog.products);
         initLevelSelect(catalog.levels);
-        initGraph(catalog);
-      } catch (err) {
-        if (isDebug) console.error(`Error`, err.message);
-      }
 
-      setIsLoading(false);
-      setIsResultReady(true);
+        catalog = { ...catalog, modules: markModuleWithoutPath(catalog) };
+
+        initGraph(catalog);
+
+        setIsLoading(false);
+        setIsResultReady(true);
+      } catch (err) {
+        toast.error(
+          'No network connection. Refresh page to use locally stored data.'
+        );
+        console.error(`Error`, err.message);
+      }
     };
 
     run();
   }, []);
+
+  const markModuleWithoutPath = (catalog) => {
+    return catalog.modules.map((module) => {
+      return catalog.learningPaths.some((path) =>
+        path.modules.includes(module.uid)
+      )
+        ? module
+        : { ...module, withoutPath: true };
+    });
+  };
 
   const handleProductSelectChange = (value) => {
     selectedProducts.current = value.map((product) => product.value);
@@ -475,7 +618,7 @@ function Catalog(props) {
   const filterPathsByModules = (modules) => {
     if (modules.length === 0) {
       filteredPaths.current = [];
-      filterRolesByPaths(filteredPaths.current);
+      filterRolesByPathsModules(filteredPaths.current, filteredModules.current);
       return;
     }
 
@@ -487,21 +630,21 @@ function Catalog(props) {
       }
     );
 
-    filterRolesByPaths(filteredPaths.current);
+    filterRolesByPathsModules(filteredPaths.current, filteredModules.current);
   };
 
-  const filterRolesByPaths = (paths) => {
-    if (paths.length === 0) {
-      filteredRoles.current = [];
-      buildGraph(filteredRoles.current);
-      return;
-    }
-
+  const filterRolesByPathsModules = (paths, modules) => {
     let roles = [];
 
     paths.forEach((path) => {
       roles = [...roles, ...path.roles];
     });
+
+    modules
+      .filter((module) => module.withoutPath)
+      .forEach((module) => {
+        roles = [...roles, ...module.roles];
+      });
 
     roles = [...new Set(roles)];
 
@@ -555,6 +698,9 @@ function Catalog(props) {
               options={graphOptions}
               events={graphEvents}
               style={{ height: '100%' }}
+              getNetwork={(network) => {
+                setNetwork(network);
+              }}
             />
           </div>
         </div>
@@ -564,6 +710,7 @@ function Catalog(props) {
           <small>Loading catalog...</small>
         </p>
       ) : null}
+      <ToastContainer />
     </>
   );
 }

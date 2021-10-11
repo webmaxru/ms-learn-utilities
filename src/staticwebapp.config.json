@@ -1,0 +1,25 @@
+{
+  "routes": [
+    {
+      "route": "/images/*",
+      "headers": {
+        "cache-control": "must-revalidate, max-age=15770000"
+      }
+    }
+  ],
+  "navigationFallback": {
+    "rewrite": "index.html",
+    "exclude": ["/images/*.{png,jpg,gif}", "/static/*"]
+  },
+  "responseOverrides": {
+    "404": {
+      "rewrite": "/404.html"
+    }
+  },
+  "globalHeaders": {
+    "X-Powered-By": "Maxim Salnikov and Azure Static Web Apps"
+  },
+  "mimeTypes": {
+    ".webmanifest": "text/json"
+  }
+}
