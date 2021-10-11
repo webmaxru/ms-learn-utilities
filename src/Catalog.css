@@ -1,24 +1,29 @@
 .graph {
-  height: calc(100% - 100px);
+  flex: 1 0 auto; 
 }
 
 .filter {
-  height: 80px;
-  padding: 0 2em;
+  padding: 0 2em 1em 2em;
   display: flex;
-  gap: 1em;
+  gap: 0.5em;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
 .keyword {
-  max-width: 250px;
+  width: 268px;
+}
+
+.keyword > input {
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .catalog {
   width: 100%;
   display: flex;
   flex-direction: column;
-  flex: 2;
+  flex: 2; 
 }
 
 .hint-icon {

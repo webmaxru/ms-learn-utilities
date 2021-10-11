@@ -155,7 +155,7 @@ function Catalog(props) {
     }),
     container: (provided) => ({
       ...provided,
-      width: 250,
+      width: 268,
     }),
   };
 
@@ -707,7 +707,7 @@ function Catalog(props) {
                 placeholder="[ All ]"
               />
             </div>
-            <div>
+            <div className="keyword">
               Module keyword:
               <input
                 type="text"
@@ -722,7 +722,7 @@ function Catalog(props) {
               graph={graph}
               options={graphOptions}
               events={graphEvents}
-              style={{ height: '100%' }}
+              style={{ height: '98%' }}
               getNetwork={(network) => {
                 setNetwork(network);
               }}

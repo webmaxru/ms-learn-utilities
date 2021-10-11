@@ -102,7 +102,7 @@ input[type='password'],
 input[type='email'],
 input[type='url'] {
   background: #ffffff;
-  border-radius: 5px;
+  border-radius: 4px;
   color: #333333;
   border: 1px solid #cccccc;
   padding: 0.6em 0.5em;
