@@ -521,7 +521,7 @@ function Catalog(props) {
 
     const run = async () => {
       try {
-        const res = await fetch('catalog.json'); // /api/catalog OR catalog.json
+        const res = await fetch('/api/catalog'); // /api/catalog OR catalog.json
         let catalog = await res.json();
 
         initProductSelect(catalog.products);
