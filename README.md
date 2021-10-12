@@ -12,7 +12,7 @@ Set of tools to provide better experience for the learners and educators on MS L
 
 This is a Progressive Web Application (installable, offline-ready) driven by Workbox-powered service worker.
 
-[https://aka.ms/mslearn-util](https://aka.ms/mslearn-util)
+[https://mylearn.guide](https://mylearn.guide)
 
 ## Flow and resources for the Azure Static Web Apps features demo
 
