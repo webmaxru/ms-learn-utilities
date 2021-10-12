@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect, useRef } from 'react';
@@ -563,7 +564,7 @@ function Catalog(props) {
     target = escapeRegExp(target.toUpperCase());
     return keywords.every((keyword) =>
       new RegExp('\\b' + keyword + '\\b').test(target)
-    ); //target.includes(keyword)
+    );
   };
 
   const applyFilter = (products, levels, keyword) => {
