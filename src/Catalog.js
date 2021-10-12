@@ -170,13 +170,6 @@ function Catalog(props) {
         openInNewTab(buildExternalUrl(node.meta.url));
       }
     },
-    doubleClick: ({ nodes }) => {
-      if (!nodes[0]) {
-        return;
-      }
-
-      network.focus(nodes[0], FOCUS_PARAMS);
-    },
   };
 
   const deleteGraphElement = (types) => {
@@ -251,7 +244,7 @@ function Catalog(props) {
       edges: [...clearedGraph.edges, ...newEdges],
     }));
 
-    if (network && network.focus) network.focus(lastNodeId, FOCUS_PARAMS);
+    //if (network && network.focus) network.focus(lastNodeId, FOCUS_PARAMS);
   };
 
   const addGraphPaths = (graph, roleId, clearGraph = false) => {
@@ -352,7 +345,7 @@ function Catalog(props) {
       }
     });
 
-    if (network && network.focus) network.focus(lastNodeId, FOCUS_PARAMS);
+    //if (network && network.focus) network.focus(lastNodeId, FOCUS_PARAMS);
   };
 
   const addGraphRoles = (roles) => {
@@ -401,8 +394,8 @@ function Catalog(props) {
     addGraphRoles(roles);
 
     if (network && network.focus) {
-      network.focus(ROOT_NODE_ID, FOCUS_PARAMS);
-      network.fit();
+      //network.focus(ROOT_NODE_ID, FOCUS_PARAMS);
+      //network.fit();
     }
   };
 
