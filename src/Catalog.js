@@ -163,6 +163,7 @@ function Catalog(props) {
 
       if (node.type === 'role') {
         activeRole.current = node.id;
+        activePath.current = '';
         addGraphPaths(graph, node.id, true);
       } else if (node.type === 'path') {
         activePath.current = node.id;
