@@ -515,7 +515,7 @@ function Catalog(props) {
         toast.error(
           'No network connection. Refresh page to use locally stored data.'
         );
-        console.error(`Error`, err.message);
+        console.error(`[Error]`, err.message);
       }
     };
 
@@ -703,7 +703,7 @@ function Catalog(props) {
           text: 'Please, have a look at the learning materials I found on MS Learn',
           url: url,
         })
-        .catch((err) => toast.error(`Something went wrong with sharing`));
+        .catch((err) => console.error(`[Error]`, err.message));
     } else {
       toast.warning(
         `Your browser doesn't support sharing. Please share the link manually.`

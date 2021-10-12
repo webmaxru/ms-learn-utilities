@@ -11,7 +11,7 @@
 }
 
 .keyword {
-  width: 268px;
+  width: 240px;
 }
 
 .keyword > input {
@@ -20,9 +20,10 @@
 }
 
 .share {
-  width: 268px;
+  width: 240px;
   border-left: 1px solid #cccccc;
   padding-left: 0.5em;
+  box-sizing: border-box;
 }
 
 .catalog {

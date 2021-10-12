@@ -37,7 +37,7 @@ export const CUSTOM_SELECT_STYLES = {
   }),
   container: (provided) => ({
     ...provided,
-    width: 268,
+    width: 240,
   }),
 };
 
