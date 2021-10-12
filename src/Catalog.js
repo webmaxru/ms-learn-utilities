@@ -166,7 +166,18 @@ function Catalog(props) {
         addGraphPaths(graph, node.id, true);
       } else if (node.type === 'path') {
         activePath.current = node.id;
-        addGraphModules(graph, node.id, true);
+
+        let path = initialCatalog.current.learningPaths.find(
+          (path) => path.uid === node.id
+        );
+
+        let moduleCount = filteredModules.current.filter((module) => {
+          return path.modules.includes(module.uid);
+        }).length;
+
+        moduleCount > 0
+          ? addGraphModules(graph, node.id, true)
+          : openInNewTab(buildExternalUrl(node.meta.url));
       } else if (node.type === 'module' || node.type === 'moduleWithoutPath') {
         openInNewTab(buildExternalUrl(node.meta.url));
       }
@@ -288,7 +299,13 @@ function Catalog(props) {
           <p>Products: <strong>${buildProductList(path.products)}</strong></p>
           <p>Levels: <strong>${buildLevelList(path.levels)}</strong></p>
           <p>Roles: <strong>${buildRoleList(path.roles)}</strong></p>
-          <p>This is a <span class="label-path">learning path</span>. Click to see <span class="label-module">${moduleCount} included modules</span></p>`
+          <p>This is a <span class="label-path">learning path</span>. ${
+            moduleCount > 0
+              ? 'Click to see <span class="label-module">' +
+                moduleCount +
+                ' included modules</span>'
+              : 'Click to see its details on MS Learn'
+          }</p>`
         ),
         meta: path,
         color: {
@@ -365,11 +382,21 @@ function Catalog(props) {
 
       counter++;
 
+      let hintArray = [];
+      if (learningPathCount > 0)
+        hintArray.push(
+          `<span class="label-path">${learningPathCount} learning paths</span>`
+        );
+      if (moduleCount > 0)
+        hintArray.push(
+          `<span class="label-module">${moduleCount} learning modules</span>`
+        );
+
       newNodes.push({
         id: role.id,
         label: htmlLabel(`${role.name}`),
         title: htmlHint(
-          `Click to see <span class="label-path">${learningPathCount} learning paths</span> and <span class="label-module">${moduleCount} modules</span> for this role`
+          `Click to see ${hintArray.join(' and ')} for this role`
         ),
         level: calcLevel(baseRoleLevel.current, counter, roles.length),
         type: 'role',
