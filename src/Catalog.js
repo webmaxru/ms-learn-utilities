@@ -7,18 +7,33 @@ import 'vis-network/styles/vis-network.min.css';
 import './Catalog.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useStateWithPromise } from '@kirekov/great-hooks';
+import {
+  ROOT_NODE_ID,
+  MAX_ELEMENTS_PER_LEVEL,
+  FOCUS_PARAMS,
+  CUSTOM_SELECT_STYLES,
+  INITIAL_GRAPH,
+  GRAPH_OPTIONS,
+  TRACKING_TAG,
+} from './settings.js';
 
 function Catalog(props) {
-  const ROOT_NODE_ID = 'roles';
-  const MAX_ELEMENTS_PER_LEVEL = 12;
+  const isDebug = props.isDebug;
 
-  const FOCUS_PARAMS = {
-    locked: false,
-    animation: {
-      duration: 1000,
-      easingFunction: 'easeInOutQuad',
-    },
-  };
+  const CATALOG_URL = isDebug
+    ? 'http://localhost:7071/api/catalog'
+    : '/api/catalog';
+
+  let query = new URLSearchParams(window.location.search);
+  // ?debug=true&levels=advanced,beginner&products=azure-app-service&keywords=static&role=developer&path=learn.azure-static-web-apps
+
+  let selectedProducts = useRef([]);
+  let selectedLevels = useRef([]);
+  let keyword = useRef('');
+
+  let activeRole = useRef('');
+  let activePath = useRef('');
 
   const htmlHint = (html) => {
     const container = document.createElement('div');
@@ -31,36 +46,10 @@ function Catalog(props) {
     return `<b>${html}</b>`;
   };
 
-  const initialGraph = {
-    nodes: [
-      {
-        id: ROOT_NODE_ID,
-        label: `${htmlLabel('Role')}`,
-        color: {
-          background: '#A5D5D8',
-        },
-        font: {
-          color: '#333333',
-        },
-        level: 1,
-        borderWidth: 0,
-        widthConstraint: {
-          minimum: 100,
-          maximum: 100,
-        },
-      },
-    ],
-    edges: [],
-  };
   const [isResultReady, setIsResultReady] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const isDebug = props.isDebug;
 
-  const CATALOG_URL = isDebug
-    ? 'http://localhost:7071/api/catalog'
-    : '/api/catalog';
-
-  const [graph, setGraph] = useState(initialGraph);
+  const [graph, setGraph] = useStateWithPromise(INITIAL_GRAPH);
 
   const [productSelectOptions, setProductSelectOptions] = useState([]);
   const [levelSelectOptions, setLevelSelectOptions] = useState([]);
@@ -70,10 +59,6 @@ function Catalog(props) {
   let filteredPaths = useRef([]);
   let filteredModules = useRef([]);
   let filteredRoles = useRef([]);
-
-  let selectedProducts = useRef([]);
-  let selectedLevels = useRef([]);
-  let keyword = useRef('');
 
   let currentColCount = useRef(1);
   let baseRoleLevel = useRef(2);
@@ -100,6 +85,20 @@ function Catalog(props) {
       .join(', ');
   };
 
+  const deepSearch = (object, key, predicate) => {
+    if (object.hasOwnProperty(key) && predicate(key, object[key]) === true)
+      return object;
+
+    for (let i = 0; i < Object.keys(object).length; i++) {
+      const nextObject = object[Object.keys(object)[i]];
+      if (nextObject && typeof nextObject === 'object') {
+        let o = deepSearch(nextObject, key, predicate);
+        if (o != null) return o;
+      }
+    }
+    return null;
+  };
+
   const buildLevelList = (levels) => {
     return levels
       .map((level) => {
@@ -111,20 +110,6 @@ function Catalog(props) {
   };
 
   const buildProductList = (products) => {
-    const deepSearch = (object, key, predicate) => {
-      if (object.hasOwnProperty(key) && predicate(key, object[key]) === true)
-        return object;
-
-      for (let i = 0; i < Object.keys(object).length; i++) {
-        const nextObject = object[Object.keys(object)[i]];
-        if (nextObject && typeof nextObject === 'object') {
-          let o = deepSearch(nextObject, key, predicate);
-          if (o != null) return o;
-        }
-      }
-      return null;
-    };
-
     return products
       .map((product) => {
         return deepSearch(
@@ -148,15 +133,8 @@ function Catalog(props) {
     return baseLevel + (counter % colCount);
   };
 
-  const customSelectStyles = {
-    option: (provided, state) => ({
-      ...provided,
-      color: state.isSelected ? '#00968D' : '#333333',
-    }),
-    container: (provided) => ({
-      ...provided,
-      width: 268,
-    }),
+  const buildExternalUrl = (url) => {
+    return `${url.split('?')[0]}?${TRACKING_TAG}`;
   };
 
   const openInNewTab = (url) => {
@@ -164,9 +142,14 @@ function Catalog(props) {
     a.setAttribute('href', url);
     a.setAttribute('target', '_blank');
     a.click();
+  };
 
-    /*     const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
-    if (newWindow) newWindow.opener = null; */
+  const expandRole = (graph, roleId) => {
+    addGraphPaths(graph, roleId, false);
+  };
+
+  const expandPath = (graph, pathId) => {
+    addGraphModules(graph, pathId, false);
   };
 
   const graphEvents = {
@@ -178,11 +161,13 @@ function Catalog(props) {
       let node = graph.nodes.find((node) => node.id === nodes[0]);
 
       if (node.type === 'role') {
-        addGraphPaths(node.id);
+        activeRole.current = node.id;
+        addGraphPaths(graph, node.id, true);
       } else if (node.type === 'path') {
-        addGraphModules(node.id);
+        activePath.current = node.id;
+        addGraphModules(graph, node.id, true);
       } else if (node.type === 'module' || node.type === 'moduleWithoutPath') {
-        openInNewTab(node.meta.url);
+        openInNewTab(buildExternalUrl(node.meta.url));
       }
     },
     doubleClick: ({ nodes }) => {
@@ -225,7 +210,7 @@ function Catalog(props) {
     );
   };
 
-  const addGraphModules = (pathId) => {
+  const addGraphModules = (graph, pathId, clearGraph = false) => {
     let counter = 0;
     let newNodes = [];
     let newEdges = [];
@@ -235,7 +220,7 @@ function Catalog(props) {
       (path) => path.uid === pathId
     );
 
-    let clearedGraph = deleteGraphElement(['module']);
+    let clearedGraph = clearGraph ? deleteGraphElement(['module']) : graph;
 
     let modules = filteredModules.current.filter((module) => {
       return path.modules.includes(module.uid);
@@ -266,20 +251,18 @@ function Catalog(props) {
       edges: [...clearedGraph.edges, ...newEdges],
     }));
 
-    network.focus(lastNodeId, FOCUS_PARAMS);
+    if (network && network.focus) network.focus(lastNodeId, FOCUS_PARAMS);
   };
 
-  const addGraphPaths = (roleId) => {
+  const addGraphPaths = (graph, roleId, clearGraph = false) => {
     let counter = 0;
     let newNodes = [];
     let newEdges = [];
     let lastNodeId = null;
 
-    let clearedGraph = deleteGraphElement([
-      'module',
-      'path',
-      'moduleWithoutPath',
-    ]);
+    let clearedGraph = clearGraph
+      ? deleteGraphElement(['module', 'path', 'moduleWithoutPath'])
+      : graph;
 
     let paths = filteredPaths.current.filter((path) =>
       path.roles.some((e) => e === roleId)
@@ -363,9 +346,13 @@ function Catalog(props) {
     setGraph(() => ({
       nodes: [...clearedGraph.nodes, ...newNodes],
       edges: [...clearedGraph.edges, ...newEdges],
-    }));
+    })).then((graph) => {
+      if (activePath.current) {
+        expandPath(graph, activePath.current);
+      }
+    });
 
-    network.focus(lastNodeId, FOCUS_PARAMS);
+    if (network && network.focus) network.focus(lastNodeId, FOCUS_PARAMS);
   };
 
   const addGraphRoles = (roles) => {
@@ -402,113 +389,21 @@ function Catalog(props) {
     setGraph((graph) => ({
       nodes: [...graph.nodes, ...newNodes],
       edges: [...graph.edges, ...newEdges],
-    }));
-  };
-
-  const initGraph = (catalog) => {
-    initialCatalog.current = catalog;
-    filteredPaths.current = initialCatalog.current.learningPaths;
-    filteredModules.current = initialCatalog.current.modules;
-    filteredRoles.current = initialCatalog.current.roles;
-
-    buildGraph(catalog.roles);
+    })).then((graph) => {
+      if (activeRole.current) {
+        expandRole(graph, activeRole.current);
+      }
+    });
   };
 
   const buildGraph = (roles) => {
-    setGraph(initialGraph); // For local hot reload
+    setGraph(INITIAL_GRAPH); // For local hot reload
     addGraphRoles(roles);
+
     if (network && network.focus) {
       network.focus(ROOT_NODE_ID, FOCUS_PARAMS);
       network.fit();
     }
-  };
-
-  const graphOptions = {
-    edges: {
-      color: '#cccccc',
-    },
-    nodes: {
-      borderWidth: 0,
-      labelHighlightBold: false,
-      widthConstraint: {
-        minimum: 350,
-        maximum: 350,
-      },
-      color: {
-        background: '#00968D',
-        hover: {
-          background: '#F2A391',
-        },
-        highlight: {
-          background: '#F2A391',
-        },
-      },
-      font: {
-        color: '#ffffff',
-        multi: 'html',
-        size: 20,
-        face: 'Saira',
-      },
-      margin: {
-        top: 10,
-        bottom: 10,
-        left: 20,
-        right: 20,
-      },
-      shape: 'box',
-      shapeProperties: {
-        borderRadius: 5,
-      },
-      scaling: {
-        min: 10,
-        max: 150,
-        label: {
-          enabled: true,
-          min: 14,
-          max: 30,
-        },
-      },
-    },
-    layout: {
-      randomSeed: undefined,
-      improvedLayout: true,
-      clusterThreshold: 150,
-      hierarchical: {
-        enabled: true,
-        levelSeparation: 450,
-        nodeSpacing: 100,
-        treeSpacing: 100,
-        blockShifting: true,
-        edgeMinimization: true,
-        parentCentralization: true,
-        direction: 'LR', // UD, DU, LR, RL
-        sortMethod: 'directed', // hubsize, directed
-        shakeTowards: 'leaves', // roots, leaves
-      },
-    },
-
-    interaction: {
-      dragNodes: true,
-      dragView: true,
-      hideEdgesOnDrag: false,
-      hideEdgesOnZoom: false,
-      hideNodesOnDrag: false,
-      hover: true,
-      hoverConnectedEdges: true,
-      keyboard: {
-        enabled: false,
-        speed: { x: 10, y: 10, zoom: 0.02 },
-        bindToWindow: true,
-        autoFocus: true,
-      },
-      multiselect: true,
-      navigationButtons: true,
-      selectable: true,
-      selectConnectedEdges: true,
-      tooltipDelay: 300,
-      zoomSpeed: 2,
-      zoomView: true,
-    },
   };
 
   const initProductSelect = (products) => {
@@ -544,6 +439,34 @@ function Catalog(props) {
     });
   };
 
+  const buildLevelSelectDefaultOptions = (levels) => {
+    return levels.map((level) => {
+      let foundLevel = initialCatalog.current.levels.find((e) => {
+        return e.id === level;
+      });
+
+      return {
+        value: foundLevel.id,
+        label: foundLevel.name,
+      };
+    });
+  };
+
+  const buildProductSelectDefaultOptions = (products) => {
+    return products.map((product) => {
+      let foundElement = deepSearch(
+        initialCatalog.current.products,
+        'id',
+        (k, v) => v === product
+      );
+
+      return {
+        value: foundElement.id,
+        label: foundElement.name,
+      };
+    });
+  };
+
   useEffect(() => {
     setIsLoading(true);
     setIsResultReady(false);
@@ -558,7 +481,33 @@ function Catalog(props) {
 
         catalog = { ...catalog, modules: markModuleWithoutPath(catalog) };
 
-        initGraph(catalog);
+        initialCatalog.current = catalog;
+        filteredPaths.current = initialCatalog.current.learningPaths;
+        filteredModules.current = initialCatalog.current.modules;
+        filteredRoles.current = initialCatalog.current.roles;
+
+        if (query.get('sharedUrl')) {
+          query = new URLSearchParams(query.get('sharedUrl'));
+        }
+
+        selectedLevels.current = buildLevelSelectDefaultOptions(
+          query.get('levels') ? query.get('levels').trim().split(',') : []
+        );
+        selectedProducts.current = buildProductSelectDefaultOptions(
+          query.get('products') ? query.get('products').trim().split(',') : []
+        );
+        keyword.current = query.get('keywords')
+          ? query.get('keywords').trim()
+          : '';
+
+        activeRole.current = query.get('role') ? query.get('role').trim() : '';
+        activePath.current = query.get('path') ? query.get('path').trim() : '';
+
+        applyFilter(
+          selectedProducts.current,
+          selectedLevels.current,
+          keyword.current
+        );
 
         setIsLoading(false);
         setIsResultReady(true);
@@ -584,8 +533,8 @@ function Catalog(props) {
   };
 
   const handleProductSelectChange = (value) => {
-    selectedProducts.current = value.map((product) => product.value);
-    filterModulesByProductsLevelsKeyword(
+    selectedProducts.current = value;
+    applyFilter(
       selectedProducts.current,
       selectedLevels.current,
       keyword.current
@@ -593,8 +542,8 @@ function Catalog(props) {
   };
 
   const handleLevelSelectChange = (value) => {
-    selectedLevels.current = value.map((level) => level.value);
-    filterModulesByProductsLevelsKeyword(
+    selectedLevels.current = value;
+    applyFilter(
       selectedProducts.current,
       selectedLevels.current,
       keyword.current
@@ -603,14 +552,19 @@ function Catalog(props) {
 
   const handleKeywordInputChange = (event) => {
     keyword.current = event.target.value;
-    filterModulesByProductsLevelsKeyword(
+    applyFilter(
       selectedProducts.current,
       selectedLevels.current,
       keyword.current
     );
   };
 
-  const filterModulesByProductsLevelsKeyword = (products, levels, keyword) => {
+  const findKeyword = (target, keywords) => {
+    target = target.toUpperCase();
+    return keywords.every((keyword) => target.includes(keyword));
+  };
+
+  const applyFilter = (products, levels, keyword) => {
     if (products.length === 0 && levels.length === 0 && keyword === '') {
       filteredPaths.current = initialCatalog.current.learningPaths;
       filteredModules.current = initialCatalog.current.modules;
@@ -618,6 +572,23 @@ function Catalog(props) {
       buildGraph(initialCatalog.current.roles);
       return;
     }
+
+    levels = levels.map((level) => level.value);
+    products = products.map((product) => product.value);
+
+    let keywords = keyword
+      .trim()
+      .split(' ')
+      .map((keyword) => keyword.toUpperCase());
+
+    filterModules(products, levels, keywords);
+    filterPaths(products, levels, keywords);
+    filterRoles(filteredPaths.current, filteredModules.current);
+
+    buildGraph(filteredRoles.current);
+  };
+
+  const filterModules = (products, levels, keywords) => {
     filteredModules.current = initialCatalog.current.modules.filter(
       (module) => {
         let isProductFound =
@@ -629,36 +600,49 @@ function Catalog(props) {
             ? true
             : module.levels.some((level) => levels.includes(level));
         let isKeywordFound =
-          keyword === ''
+          keywords === []
             ? true
-            : module.title.toUpperCase().includes(keyword.toUpperCase()) ||
-              module.summary.toUpperCase().includes(keyword.toUpperCase());
+            : findKeyword(module.title, keywords) ||
+              findKeyword(module.summary, keywords);
 
         return isProductFound && isLevelFound && isKeywordFound;
       }
     );
-    filterPathsByModules(filteredModules.current);
   };
 
-  const filterPathsByModules = (modules) => {
-    if (modules.length === 0) {
-      filteredPaths.current = [];
-      filterRolesByPathsModules(filteredPaths.current, filteredModules.current);
-      return;
-    }
+  const filterPaths = (products, levels, keywords) => {
+    let filteredModuleIds = filteredModules.current.map((module) => module.uid);
 
-    let moduleIds = modules.map((module) => module.uid);
-
-    filteredPaths.current = initialCatalog.current.learningPaths.filter(
+    let foundModulePaths = initialCatalog.current.learningPaths.filter(
       (path) => {
-        return path.modules.some((module) => moduleIds.includes(module));
+        return path.modules.some((module) =>
+          filteredModuleIds.includes(module)
+        );
       }
     );
 
-    filterRolesByPathsModules(filteredPaths.current, filteredModules.current);
+    let foundPaths = initialCatalog.current.learningPaths.filter((path) => {
+      let isProductFound =
+        products.length === 0
+          ? true
+          : path.products.some((product) => products.includes(product));
+      let isLevelFound =
+        levels.length === 0
+          ? true
+          : path.levels.some((level) => levels.includes(level));
+      let isKeywordFound =
+        keywords === []
+          ? true
+          : findKeyword(path.title, keywords) ||
+            findKeyword(path.summary, keywords);
+
+      return isProductFound && isLevelFound && isKeywordFound;
+    });
+
+    filteredPaths.current = [...new Set(foundModulePaths.concat(foundPaths))];
   };
 
-  const filterRolesByPathsModules = (paths, modules) => {
+  const filterRoles = (paths, modules) => {
     let roles = [];
 
     paths.forEach((path) => {
@@ -676,8 +660,56 @@ function Catalog(props) {
     filteredRoles.current = initialCatalog.current.roles.filter((role) => {
       return roles.includes(role.id);
     });
+  };
 
-    buildGraph(filteredRoles.current);
+  const buildUrl = (source) => {
+    let params = {
+      source: source,
+    };
+
+    if (selectedLevels.current.length > 0)
+      params['levels'] = selectedLevels.current.map((e) => e.value).join(',');
+    if (selectedProducts.current.length > 0)
+      params['products'] = selectedProducts.current
+        .map((e) => e.value)
+        .join(',');
+    if (keyword.current !== '') params['keywords'] = keyword.current;
+    if (activeRole.current !== '') params['role'] = activeRole.current;
+    if (activePath.current !== '') params['path'] = activePath.current;
+
+    const urlParams = new URLSearchParams(params);
+
+    return `${window.location.origin}/?${urlParams.toString()}`;
+  };
+
+  const copyUrl = () => {
+    let url = buildUrl('copy');
+    let textArea = document.createElement('textarea');
+    textArea.value = url;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    textArea.remove();
+    toast.success(`The link was copied to clipboard.`);
+  };
+
+  const shareUrl = () => {
+    let url = buildUrl('share');
+
+    if (navigator.share) {
+      navigator
+        .share({
+          title: 'MS Learn Navigator - A Visual Way to Navigate MS Learn',
+          text: 'Please, have a look at the learning materials I found on MS Learn',
+          url: url,
+        })
+        .catch((err) => toast.error(`Something went wrong with sharing`));
+    } else {
+      toast.warning(
+        `Your browser doesn't support sharing. Please share the link manually.`
+      );
+      copyUrl();
+    }
   };
 
   return (
@@ -689,26 +721,29 @@ function Catalog(props) {
               Product:
               <Select
                 options={productSelectOptions}
-                styles={customSelectStyles}
+                styles={CUSTOM_SELECT_STYLES}
                 isMulti={true}
                 isSearchable={true}
                 onChange={handleProductSelectChange}
                 placeholder="[ All ]"
+                value={selectedProducts.current}
               />
             </div>
             <div>
               Level:
               <Select
                 options={levelSelectOptions}
-                styles={customSelectStyles}
+                styles={CUSTOM_SELECT_STYLES}
                 isMulti={true}
                 isSearchable={true}
                 onChange={handleLevelSelectChange}
                 placeholder="[ All ]"
+                value={selectedLevels.current}
               />
             </div>
             <div className="keyword">
-              Module keyword:
+              Keywords:
+              <br />
               <input
                 type="text"
                 value={keyword.current}
@@ -716,11 +751,18 @@ function Catalog(props) {
                 className="keyword"
               />
             </div>
+            <div className="share">
+              Share your findings:
+              <br />
+              <button onClick={shareUrl}>Post on social</button>
+              &nbsp;
+              <button onClick={copyUrl}>Copy URL</button>
+            </div>
           </div>
           <div className="graph">
             <Graph
               graph={graph}
-              options={graphOptions}
+              options={GRAPH_OPTIONS}
               events={graphEvents}
               style={{ height: '98%' }}
               getNetwork={(network) => {

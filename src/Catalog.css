@@ -1,5 +1,5 @@
 .graph {
-  flex: 1 0 auto; 
+  flex: 1 0 auto;
 }
 
 .filter {
@@ -19,11 +19,17 @@
   box-sizing: border-box;
 }
 
+.share {
+  width: 268px;
+  border-left: 1px solid #cccccc;
+  padding-left: 0.5em;
+}
+
 .catalog {
   width: 100%;
   display: flex;
   flex-direction: column;
-  flex: 2; 
+  flex: 2;
 }
 
 .hint-icon {

@@ -1,7 +1,7 @@
 {
-  "short_name": "MS Learn Utilities",
-  "name": "MS Learn Utilities",
-  "description": "Set of tools to provide better experience for the learners and educators on MS Learn",
+  "short_name": "MS Learn Navigator",
+  "name": "MS Learn Navigator",
+  "description": "Visual way to navigate MS Learn for providing better experience for the learners and educators",
   "start_url": "/?utm_source=homescreen",
   "display": "standalone",
   "theme_color": "#00968D",
@@ -20,5 +20,14 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ]
+  ],
+  "share_target": {
+    "action": "/",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "sharedUrl"
+    }
+  }
 }

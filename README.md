@@ -2,7 +2,7 @@
 
 Set of tools to provide better experience for the learners and educators on MS Learn.
 
-- Utility #1: Visual explorer of the Learning Paths based on [Microsoft Learn Catalog API](https://docs.microsoft.com/en-us/learn/support/catalog-api)
+- MS Learn Navigator: Visual way to navigate MS Learn for providing better experience for the learners and educators. Based on [Microsoft Learn Catalog API](https://docs.microsoft.com/en-us/learn/support/catalog-api)
 
 <p align="center">
     <img src="public/images/social.png" width="300">

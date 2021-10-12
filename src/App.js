@@ -61,13 +61,14 @@ function App() {
     <Router>
       <header>
         <h1>
-          <Link to="/">MS Learn Utilities</Link>
+          <Link to="/">MS Learn Navigator</Link>
         </h1>
 
+        {/*
         <a href="/" className="menu">
           Module Navigator
         </a>
-        {/*         <a href="/total-time" className="menu">
+                 <a href="/total-time" className="menu">
           Total Time
         </a> */}
 
