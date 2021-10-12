@@ -545,6 +545,9 @@ function Catalog(props) {
 
   const handleKeywordInputChange = (event) => {
     keyword.current = event.target.value;
+
+    //if (keyword.current.length === 1) return;
+
     applyFilter(
       selectedProducts.current,
       selectedLevels.current,
@@ -552,9 +555,15 @@ function Catalog(props) {
     );
   };
 
+  const escapeRegExp = (string) => {
+    return string.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1');
+  };
+
   const findKeyword = (target, keywords) => {
-    target = target.toUpperCase();
-    return keywords.every((keyword) => target.includes(keyword));
+    target = escapeRegExp(target.toUpperCase());
+    return keywords.every((keyword) =>
+      new RegExp('\\b' + keyword + '\\b').test(target)
+    ); //target.includes(keyword)
   };
 
   const applyFilter = (products, levels, keyword) => {
