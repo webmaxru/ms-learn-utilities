@@ -780,14 +780,22 @@ function Catalog(props) {
                 value={keyword.current}
                 onChange={handleKeywordInputChange}
                 className="keyword"
+                title="Enter one or multiple keywords"
               />
             </div>
             <div className="share">
               Share your findings:
               <br />
-              <button onClick={shareUrl}>Post on social</button>
+              <button
+                onClick={shareUrl}
+                title="Show dialog for sharing on social media and other targets"
+              >
+                Post on social
+              </button>
               &nbsp;
-              <button onClick={copyUrl}>Copy URL</button>
+              <button onClick={copyUrl} title="Copy URL to clipboard">
+                Copy URL
+              </button>
             </div>
           </div>
           <div className="graph">
