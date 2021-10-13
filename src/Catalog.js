@@ -36,6 +36,8 @@ function Catalog(props) {
   let activeRole = useRef('');
   let activePath = useRef('');
 
+  let lastNodeId = useRef(ROOT_NODE_ID);
+
   const htmlHint = (html) => {
     const container = document.createElement('div');
     container.className = 'hint';
@@ -220,7 +222,6 @@ function Catalog(props) {
     let counter = 0;
     let newNodes = [];
     let newEdges = [];
-    let lastNodeId = null;
 
     let path = initialCatalog.current.learningPaths.find(
       (path) => path.uid === pathId
@@ -249,22 +250,19 @@ function Catalog(props) {
 
       newEdges.push({ from: pathId, to: module.uid, type: 'module' });
 
-      lastNodeId = module.uid;
+      lastNodeId.current = module.uid;
     });
 
     setGraph(() => ({
       nodes: [...clearedGraph.nodes, ...newNodes],
       edges: [...clearedGraph.edges, ...newEdges],
     }));
-
-    //if (network && network.focus) network.focus(lastNodeId, FOCUS_PARAMS);
   };
 
   const addGraphPaths = (graph, roleId, clearGraph = false) => {
     let counter = 0;
     let newNodes = [];
     let newEdges = [];
-    let lastNodeId = null;
 
     let clearedGraph = clearGraph
       ? deleteGraphElement(['module', 'path', 'moduleWithoutPath'])
@@ -322,7 +320,7 @@ function Catalog(props) {
 
       newEdges.push({ from: roleId, to: path.uid, type: 'path' });
 
-      lastNodeId = path.uid;
+      lastNodeId.current = path.uid;
     });
 
     modules.forEach((module) => {
@@ -350,7 +348,7 @@ function Catalog(props) {
         type: 'moduleWithoutPath',
       });
 
-      lastNodeId = module.uid;
+      lastNodeId.current = module.uid;
     });
 
     baseModuleLevel.current = basePathLevel.current + currentColCount.current;
@@ -363,8 +361,6 @@ function Catalog(props) {
         expandPath(graph, activePath.current);
       }
     });
-
-    //if (network && network.focus) network.focus(lastNodeId, FOCUS_PARAMS);
   };
 
   const addGraphRoles = (roles) => {
@@ -418,14 +414,22 @@ function Catalog(props) {
     });
   };
 
-  const buildGraph = (roles) => {
-    setGraph(INITIAL_GRAPH); // For local hot reload
-    addGraphRoles(roles);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (network && network.focus && lastNodeId.current !== ROOT_NODE_ID) {
+        try {
+          network.focus(lastNodeId.current, FOCUS_PARAMS);
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [graph]);
 
-    if (network && network.fit) {
-      //network.focus(ROOT_NODE_ID, FOCUS_PARAMS);
-      network.fit();
-    }
+  const buildGraph = (roles) => {
+    setGraph(INITIAL_GRAPH);
+    addGraphRoles(roles);
   };
 
   const initProductSelect = (products) => {
@@ -556,6 +560,9 @@ function Catalog(props) {
 
   const handleProductSelectChange = (value) => {
     selectedProducts.current = value;
+    activeRole.current = '';
+    activePath.current = '';
+    lastNodeId.current = ROOT_NODE_ID;
     applyFilter(
       selectedProducts.current,
       selectedLevels.current,
@@ -565,6 +572,9 @@ function Catalog(props) {
 
   const handleLevelSelectChange = (value) => {
     selectedLevels.current = value;
+    activeRole.current = '';
+    activePath.current = '';
+    lastNodeId.current = ROOT_NODE_ID;
     applyFilter(
       selectedProducts.current,
       selectedLevels.current,
@@ -574,13 +584,16 @@ function Catalog(props) {
 
   const handleKeywordInputChange = (event) => {
     keyword.current = event.target.value;
+    activeRole.current = '';
+    activePath.current = '';
+    lastNodeId.current = ROOT_NODE_ID;
 
-    //if (keyword.current.length === 1) return;
+    let filteredKeyword = keyword.current.length < 2 ? '' : keyword.current;
 
     applyFilter(
       selectedProducts.current,
       selectedLevels.current,
-      keyword.current
+      filteredKeyword
     );
   };
 
@@ -777,7 +790,7 @@ function Catalog(props) {
               <br />
               <input
                 type="text"
-                value={keyword.current}
+                value={keyword.current.value}
                 onChange={handleKeywordInputChange}
                 className="keyword"
                 title="Enter one or multiple keywords"

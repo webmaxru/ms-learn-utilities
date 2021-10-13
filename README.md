@@ -5,7 +5,7 @@ Set of tools to provide better experience for the learners and educators on MS L
 - MyLearn Guide: Visual way to navigate MS Learn for providing better experience for the learners and educators. Based on [Microsoft Learn Catalog API](https://docs.microsoft.com/en-us/learn/support/catalog-api)
 
 <p align="center">
-    <img src="public/images/social.png" width="300">
+    <img src="public/images/og.png" width="300">
 </p>
 
 ### Try this in action

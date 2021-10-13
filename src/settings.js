@@ -3,7 +3,7 @@ export const MAX_ELEMENTS_PER_LEVEL = 12;
 export const FOCUS_PARAMS = {
   locked: false,
   animation: {
-    duration: 1000,
+    duration: 300,
     easingFunction: 'easeInOutQuad',
   },
 };
