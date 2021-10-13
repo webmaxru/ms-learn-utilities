@@ -3,7 +3,7 @@ export const MAX_ELEMENTS_PER_LEVEL = 12;
 export const FOCUS_PARAMS = {
   locked: false,
   animation: {
-    duration: 300,
+    duration: 500,
     easingFunction: 'easeInOutQuad',
   },
 };
@@ -46,6 +46,7 @@ export const GRAPH_OPTIONS = {
     color: '#cccccc',
   },
   nodes: {
+    physics: true,
     borderWidth: 0,
     labelHighlightBold: false,
     widthConstraint: {

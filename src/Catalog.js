@@ -315,7 +315,7 @@ function Catalog(props) {
           counter,
           paths.length + modules.length
         ),
-        type: 'path',
+        type: 'path'
       });
 
       newEdges.push({ from: roleId, to: path.uid, type: 'path' });
@@ -790,7 +790,7 @@ function Catalog(props) {
               <br />
               <input
                 type="text"
-                value={keyword.current.value}
+                value={keyword.current}
                 onChange={handleKeywordInputChange}
                 className="keyword"
                 title="Enter one or multiple keywords"
