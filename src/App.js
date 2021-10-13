@@ -61,7 +61,7 @@ function App() {
     <Router>
       <header>
         <h1>
-          <Link to="/">MS Learn Navigator</Link>
+          <Link to="/">MyLearn Guide</Link>
         </h1>
 
         {/*

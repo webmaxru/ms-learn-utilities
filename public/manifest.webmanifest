@@ -1,6 +1,6 @@
 {
-  "short_name": "MS Learn Navigator",
-  "name": "MS Learn Navigator",
+  "short_name": "MyLearn Guide",
+  "name": "MyLearn Guide",
   "description": "Visual way to navigate MS Learn for providing better experience for the learners and educators",
   "start_url": "/?utm_source=homescreen",
   "display": "standalone",

@@ -422,9 +422,9 @@ function Catalog(props) {
     setGraph(INITIAL_GRAPH); // For local hot reload
     addGraphRoles(roles);
 
-    if (network && network.focus) {
+    if (network && network.fit) {
       //network.focus(ROOT_NODE_ID, FOCUS_PARAMS);
-      //network.fit();
+      network.fit();
     }
   };
 
@@ -730,8 +730,8 @@ function Catalog(props) {
     if (navigator.share) {
       navigator
         .share({
-          title: 'MS Learn Navigator - A Visual Way to Navigate MS Learn',
-          text: 'Please, have a look at the learning materials I found on MS Learn',
+          title: 'MyLearn Guide - A Visual Way to Navigate #MSLearn.',
+          text: 'Please, have a look at the learning materials I found on MS Learn:',
           url: url,
         })
         .catch((err) => console.error(`[Error]`, err.message));
