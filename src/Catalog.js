@@ -18,6 +18,7 @@ import {
   GRAPH_OPTIONS,
   TRACKING_TAG,
 } from './settings.js';
+import ReactGA from 'react-ga4';
 
 function Catalog(props) {
   const isDebug = props.isDebug;
@@ -315,7 +316,7 @@ function Catalog(props) {
           counter,
           paths.length + modules.length
         ),
-        type: 'path'
+        type: 'path',
       });
 
       newEdges.push({ from: roleId, to: path.uid, type: 'path' });
@@ -595,6 +596,10 @@ function Catalog(props) {
       selectedLevels.current,
       filteredKeyword
     );
+
+    ReactGA.event('search', {
+      search_term: filteredKeyword,
+    });
   };
 
   const escapeRegExp = (string) => {
@@ -735,6 +740,12 @@ function Catalog(props) {
     document.execCommand('copy');
     textArea.remove();
     toast.success(`The link was copied to clipboard.`);
+
+    ReactGA.event('share', {
+      method: 'Copy',
+      content_type: 'link',
+      item_id: url,
+    });
   };
 
   const shareUrl = () => {
@@ -746,6 +757,13 @@ function Catalog(props) {
           title: 'MyLearn Guide - A Visual Way to Navigate #MSLearn.',
           text: 'Please, have a look at the learning materials I found on MS Learn:',
           url: url,
+        })
+        .then(() => {
+          ReactGA.event('share', {
+            method: 'WebShare',
+            content_type: 'link',
+            item_id: url,
+          });
         })
         .catch((err) => console.error(`[Error]`, err.message));
     } else {

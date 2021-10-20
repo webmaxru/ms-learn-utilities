@@ -7,6 +7,7 @@ import { setCacheNameDetails, clientsClaim } from 'workbox-core';
 import { StaleWhileRevalidate } from 'workbox-strategies';
 import { googleFontsCache, imageCache } from 'workbox-recipes';
 import { BroadcastUpdatePlugin } from 'workbox-broadcast-update';
+import * as googleAnalytics from 'workbox-google-analytics';
 
 async function messageClient(event, messageType) {
   if (!event.clientId) return;
@@ -84,3 +85,5 @@ registerRoute(
     url.pathname.startsWith('/api/collection'),
   new StaleWhileRevalidate()
 );
+
+googleAnalytics.initialize();
