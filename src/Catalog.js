@@ -146,6 +146,10 @@ function Catalog(props) {
     a.setAttribute('href', url);
     a.setAttribute('target', '_blank');
     a.click();
+
+    ReactGA.event('event', 'visit', {
+      url: url,
+    });
   };
 
   const expandRole = (graph, roleId) => {
@@ -569,6 +573,11 @@ function Catalog(props) {
       selectedLevels.current,
       keyword.current
     );
+
+    ReactGA.event('event', 'select_content', {
+      content_type: 'product',
+      item_id: 'selectedProducts.current',
+    });
   };
 
   const handleLevelSelectChange = (value) => {
@@ -581,6 +590,11 @@ function Catalog(props) {
       selectedLevels.current,
       keyword.current
     );
+
+    ReactGA.event('event', 'select_content', {
+      content_type: 'level',
+      item_id: 'selectedLevels.current',
+    });
   };
 
   const handleKeywordInputChange = (event) => {
