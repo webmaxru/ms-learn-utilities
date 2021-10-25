@@ -147,7 +147,7 @@ function Catalog(props) {
     a.setAttribute('target', '_blank');
     a.click();
 
-    ReactGA.event('event', 'visit', {
+    ReactGA.event('visit', {
       url: url,
     });
   };
@@ -574,7 +574,7 @@ function Catalog(props) {
       keyword.current
     );
 
-    ReactGA.event('event', 'select_content', {
+    ReactGA.event('select_content', {
       content_type: 'product',
       item_id: 'selectedProducts.current',
     });
@@ -591,7 +591,7 @@ function Catalog(props) {
       keyword.current
     );
 
-    ReactGA.event('event', 'select_content', {
+    ReactGA.event('select_content', {
       content_type: 'level',
       item_id: 'selectedLevels.current',
     });
